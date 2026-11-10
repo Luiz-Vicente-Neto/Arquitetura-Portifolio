@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f3f1ec;
+  --color-paper-2: #ebe8e1;
+  --color-ink: #161513;
+  --color-ink-2: #2a2825;
+  --color-stone: #716c63;
+  --color-line: #d8d3c9;
+  --color-accent: #8c5a3c;
+
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Estilos base dentro de @layer para que as utilities do Tailwind possam sobrescrevê-los */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+}
+
+@layer components {
+/* Container de largura do site */
+.wrap {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  max-width: 1680px;
+}
+
+/* Rótulos pequenos em caixa alta, padrão recorrente em sites de arquitetura */
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-stone);
+}
+
+/* Link com sublinhado animado */
+.link-line {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.5s var(--ease-out-expo);
+}
+.link-line:hover,
+.link-line[aria-current="page"] {
+  background-size: 100% 1px;
+}
+
+/* Revelação ao rolar */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 1s var(--ease-out-expo),
+    transform 1s var(--ease-out-expo);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Imagem com zoom suave no hover */
+.img-zoom img {
+  transition: transform 1.4s var(--ease-out-expo);
+}
+.img-zoom:hover img {
+  transform: scale(1.035);
+}
+
+/* Texto corrido do site */
+.prose-arq p + p {
+  margin-top: 1.1em;
+}
+
+/* ---------- Painel administrativo ---------- */
+.admin-input {
+  width: 100%;
+  border: 1px solid #d6d3cd;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #161513;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.admin-input:focus {
+  border-color: #161513;
+  box-shadow: 0 0 0 3px rgb(22 21 19 / 0.08);
+}
+textarea.admin-input {
+  resize: vertical;
+  min-height: 6rem;
+}
+.admin-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #4a4740;
+  margin-bottom: 0.35rem;
+}
+}

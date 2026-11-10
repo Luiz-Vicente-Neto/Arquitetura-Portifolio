@@ -1,0 +1,29 @@
+{
+  "name": "arq-studio",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm",
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "vinext": "latest",
+    "react-server-dom-webpack": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "@vitejs/plugin-rsc": "latest"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "vinext start"
+  }
+}

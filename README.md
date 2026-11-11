@@ -20,9 +20,9 @@ e um painel administrativo completo para gerenciar tudo sem tocar no código.
 
 ## Sobre o projeto
 
-Feito para o portfólio de uma arquiteta e urbanista recém-formada: os projetos da graduação viram
-**estudos de caso** (Problema → Lugar → Partido → Desenhos → Processo → Imagens finais), acompanhados
-de ficha técnica, caderno em PDF e créditos.
+Plataforma de portfólio para profissionais de arquitetura e urbanismo. Cada projeto é apresentado como um
+**estudo de caso** com narrativa estruturada (Problema → Lugar → Partido → Desenhos → Processo → Imagens
+finais), acompanhado de ficha técnica, caderno em PDF e créditos.
 
 Todo o conteúdo é editável pelo **painel em `/admin`**. O conteúdo inicial usa espaços reservados entre
 `[colchetes]` e os projetos começam sem imagens (o site mostra uma área hachurada no lugar).
@@ -30,7 +30,7 @@ Todo o conteúdo é editável pelo **painel em `/admin`**. O conteúdo inicial u
 ### Destaques
 
 - 🏛️ **Estudos de caso** com blocos de texto e imagem, legendas no estilo `Fig. 01 — …` e largura total ou meia largura
-- 🗂️ **Filtro por categoria** (TFG, Arquitetura, Urbanismo…) e projeto de capa na página inicial
+- 🗂️ **Filtro por categoria** (Arquitetura, Urbanismo, Interiores…) e projeto de capa na página inicial
 - ✍️ **CMS completo**: projetos, categorias, páginas, mídia, mensagens, configurações e conta
 - 👀 **Pré-visualização de rascunhos** para quem está logado; visitantes recebem 404
 - 🧹 **Nada vazio aparece no site**, e o painel mostra uma lista "Antes de divulgar" com o que falta
@@ -92,7 +92,7 @@ e os uploads em `storage/uploads/`. Os dois ficam fora do git.
 - **Estudo de caso:** textos de Problema, Lugar, Partido, "Como se constrói" e Processo.
 - **Imagens:** cada uma vai para um bloco (Lugar, Partido, Desenhos, Processo, Imagens finais), com legenda
   e largura total ou meia largura. Em Lugar e Desenhos a imagem aparece inteira, sem corte.
-- **Ficha:** contexto acadêmico, ano, local, escala, orientação, autoria, ferramentas, créditos.
+- **Ficha:** contexto do projeto, ano, local, escala, orientação, autoria, ferramentas, créditos.
 - Capa, caderno em PDF, categoria, publicado/rascunho, ordem e slug.
 - **Capa da página inicial:** o primeiro projeto marcado abre a home.
 

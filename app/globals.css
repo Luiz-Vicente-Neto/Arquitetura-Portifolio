@@ -1,16 +1,20 @@
 @import "tailwindcss";
 
+/* Visual "prancha técnica": fundo branco, traço preto, rótulos monoespaçados e um acento. */
 @theme {
-  --color-paper: #f3f1ec;
-  --color-paper-2: #ebe8e1;
-  --color-ink: #161513;
-  --color-ink-2: #2a2825;
-  --color-stone: #716c63;
-  --color-line: #d8d3c9;
-  --color-accent: #8c5a3c;
+  --color-paper: #ffffff;
+  --color-paper-2: #f3f4f3;
+  --color-ink: #111312;
+  --color-ink-2: #2b2e2c;
+  --color-stone: #5b605d;
+  --color-line: #d5d8d6;
+  --color-hatch: #dcdfdd;
+  --color-accent: #c7350f;
 
-  --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  /* O painel ainda usa font-display em alguns títulos. */
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -32,6 +36,7 @@
     background: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    line-height: 1.5;
   }
 
   a {
@@ -43,99 +48,180 @@
     background: var(--color-ink);
     color: var(--color-paper);
   }
-}
 
-@layer components {
-/* Container de largura do site */
-.wrap {
-  width: 100%;
-  margin-inline: auto;
-  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
-  max-width: 1680px;
-}
-
-/* Rótulos pequenos em caixa alta, padrão recorrente em sites de arquitetura */
-.eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--color-stone);
-}
-
-/* Link com sublinhado animado */
-.link-line {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 0% 1px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size 0.5s var(--ease-out-expo);
-}
-.link-line:hover,
-.link-line[aria-current="page"] {
-  background-size: 100% 1px;
-}
-
-/* Revelação ao rolar */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 1s var(--ease-out-expo),
-    transform 1s var(--ease-out-expo);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 }
 
-/* Imagem com zoom suave no hover */
-.img-zoom img {
-  transition: transform 1.4s var(--ease-out-expo);
-}
-.img-zoom:hover img {
-  transform: scale(1.035);
-}
+@layer components {
+  /* Container de largura do site */
+  .wrap {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    max-width: 1376px;
+  }
 
-/* Texto corrido do site */
-.prose-arq p + p {
-  margin-top: 1.1em;
-}
+  /* Rótulo monoespaçado em caixa alta: o "texto de carimbo" do site */
+  .label,
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--color-stone);
+  }
 
-/* ---------- Painel administrativo ---------- */
-.admin-input {
-  width: 100%;
-  border: 1px solid #d6d3cd;
-  background: #fff;
-  border-radius: 8px;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: #161513;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-.admin-input:focus {
-  border-color: #161513;
-  box-shadow: 0 0 0 3px rgb(22 21 19 / 0.08);
-}
-textarea.admin-input {
-  resize: vertical;
-  min-height: 6rem;
-}
-.admin-label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #4a4740;
-  margin-bottom: 0.35rem;
-}
+  /* Área hachurada exibida enquanto uma imagem não foi enviada */
+  .hatch {
+    background-color: var(--color-paper-2);
+    background-image: repeating-linear-gradient(135deg, transparent 0 13px, var(--color-hatch) 13px 14px);
+  }
+
+  /* Quadro de células com borda, como o carimbo de uma prancha */
+  .carimbo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+    border-top: 1px solid var(--color-ink);
+    border-left: 1px solid var(--color-ink);
+  }
+  .carimbo > * {
+    border-right: 1px solid var(--color-ink);
+    border-bottom: 1px solid var(--color-ink);
+    padding: 0.9rem 1.1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .btn-solid,
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: 1px solid var(--color-ink);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .btn-solid {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .btn-solid:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  .btn-outline:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  /* Link com sublinhado permanente (ações secundárias) */
+  .link-under {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+    transition: color 0.2s;
+  }
+  .link-under:hover {
+    color: var(--color-accent);
+  }
+
+  /* Link com sublinhado animado */
+  .link-line {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.5s var(--ease-out-expo);
+  }
+  .link-line:hover,
+  .link-line[aria-current="page"] {
+    background-size: 100% 1px;
+  }
+
+  /* Revelação ao rolar */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.8s var(--ease-out-expo),
+      transform 0.8s var(--ease-out-expo);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* Texto corrido do site */
+  .prose-arq p + p {
+    margin-top: 1em;
+  }
+
+  /* Campos do formulário de contato */
+  .field {
+    width: 100%;
+    min-height: 3.25rem;
+    border: 1px solid var(--color-ink);
+    border-radius: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 0.8rem 1rem;
+    font: inherit;
+    font-size: 1.05rem;
+  }
+
+  /* ---------- Painel administrativo ---------- */
+  .admin-input {
+    width: 100%;
+    border: 1px solid #d6d3cd;
+    background: #fff;
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #161513;
+    outline: none;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+  .admin-input:focus {
+    border-color: #161513;
+    box-shadow: 0 0 0 3px rgb(22 21 19 / 0.08);
+  }
+  textarea.admin-input {
+    resize: vertical;
+    min-height: 6rem;
+  }
+  .admin-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #4a4740;
+    margin-bottom: 0.35rem;
+  }
 }

@@ -13,16 +13,13 @@ import {
   verifyPassword,
 } from "../auth";
 import {
-  POST_TYPE_LABEL,
-  PROJECT_STATUS_LABEL,
+  GALLERY_SECTIONS,
   type AboutContent,
   type Category,
   type GalleryImage,
+  type GallerySection,
   type HomeContent,
-  type Post,
-  type PostType,
   type Project,
-  type ProjectStatus,
   type Settings,
 } from "../types";
 import { slugify, uid } from "../utils";
@@ -143,6 +140,7 @@ function cleanGallery(v: unknown): GalleryImage[] {
       url: url(g?.url),
       caption: text(g?.caption, 300),
       layout: g?.layout === "half" ? ("half" as const) : ("full" as const),
+      section: GALLERY_SECTIONS.includes(g?.section) ? (g.section as GallerySection) : ("finais" as const),
     }))
     .filter((g) => g.url)
     .slice(0, 200);
@@ -158,9 +156,6 @@ export async function saveProject(input: ProjectInput): Promise<ActionResult> {
   const existing = input.id ? projects.find((p) => p.id === input.id) : undefined;
   if (input.id && !existing) return fail("Projeto não encontrado — ele pode ter sido excluído.");
 
-  const status = (Object.keys(PROJECT_STATUS_LABEL) as ProjectStatus[]).includes(input.status)
-    ? input.status
-    : "concluido";
   const categoryId = categories.some((c) => c.id === input.categoryId) ? input.categoryId : (categories[0]?.id ?? "");
   const slug = uniqueSlug(
     text(input.slug, 120) || title,
@@ -175,16 +170,22 @@ export async function saveProject(input: ProjectInput): Promise<ActionResult> {
     title,
     subtitle: text(input.subtitle, 300),
     categoryId,
-    status,
+    program: text(input.program, 200),
+    context: text(input.context, 200),
     location: text(input.location, 200),
     year: text(input.year, 20),
-    area: text(input.area, 50),
-    client: text(input.client, 200),
-    team: text(input.team, 1000),
-    photographer: text(input.photographer, 300),
+    area: text(input.area, 80),
+    advisor: text(input.advisor, 200),
+    authorship: text(input.authorship, 300),
+    tools: text(input.tools, 300),
     summary: text(input.summary, 2000),
-    description: longText(input.description),
+    siteText: longText(input.siteText),
+    conceptText: longText(input.conceptText),
+    constructionText: longText(input.constructionText),
+    processText: longText(input.processText),
+    credits: text(input.credits, 2000),
     cover: url(input.cover),
+    pdfUrl: url(input.pdfUrl),
     gallery: cleanGallery(input.gallery),
     featured: bool(input.featured),
     published: bool(input.published),
@@ -249,52 +250,9 @@ export async function saveCategories(categories: Category[]): Promise<ActionResu
   return { ok: true };
 }
 
-/* ---------- Jornal ---------- */
-
-export type PostInput = Omit<Post, "id" | "createdAt" | "updatedAt"> & { id?: string };
-
-export async function savePost(input: PostInput): Promise<ActionResult> {
-  await requireAdmin();
-  const store = await db();
-  const title = text(input.title, 300);
-  if (!title) return fail("A publicação precisa de um título.");
-  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(input.date)) ? input.date : new Date().toISOString().slice(0, 10);
-
-  const posts = await store.listPosts();
-  const existing = input.id ? posts.find((p) => p.id === input.id) : undefined;
-  if (input.id && !existing) return fail("Publicação não encontrada — ela pode ter sido excluída.");
-  const stamp = new Date().toISOString();
-
-  const post: Post = {
-    id: existing?.id ?? uid("n"),
-    slug: uniqueSlug(text(input.slug, 120) || title, posts.filter((p) => p.id !== existing?.id).map((p) => p.slug), "publicacao"),
-    title,
-    type: (Object.keys(POST_TYPE_LABEL) as PostType[]).includes(input.type) ? input.type : "noticia",
-    date,
-    outlet: text(input.outlet, 200),
-    externalUrl: url(input.externalUrl),
-    excerpt: text(input.excerpt, 2000),
-    body: longText(input.body),
-    cover: url(input.cover),
-    published: bool(input.published),
-    createdAt: existing?.createdAt ?? stamp,
-    updatedAt: stamp,
-  };
-  await store.upsertPost(post);
-  refresh();
-  return { ok: true, id: post.id };
-}
-
-export async function deletePost(id: string): Promise<ActionResult> {
-  await requireAdmin();
-  await (await db()).deletePost(String(id));
-  refresh();
-  return { ok: true };
-}
-
 /* ---------- Páginas e configurações ---------- */
 
-const pairs = <K extends string>(v: unknown, keys: K[], max = 50): Record<K, string>[] =>
+const rows = <K extends string>(v: unknown, keys: K[], max = 50): Record<K, string>[] =>
   Array.isArray(v)
     ? v
         .map((row) => Object.fromEntries(keys.map((k) => [k, text(row?.[k], 1000)])) as Record<K, string>)
@@ -305,17 +263,9 @@ const pairs = <K extends string>(v: unknown, keys: K[], max = 50): Record<K, str
 export async function saveHome(home: HomeContent): Promise<ActionResult> {
   await requireAdmin();
   const data: HomeContent = {
-    heroTitle: text(home.heroTitle, 200),
-    heroSubtitle: text(home.heroSubtitle, 300),
-    statement: text(home.statement, 2000),
-    servicesTitle: text(home.servicesTitle, 100),
-    services: pairs(home.services, ["title", "text"]),
-    aboutTeaserTitle: text(home.aboutTeaserTitle, 200),
-    aboutTeaserText: text(home.aboutTeaserText, 2000),
-    aboutTeaserImage: url(home.aboutTeaserImage),
+    eyebrow: text(home.eyebrow, 200),
+    heroTitle: text(home.heroTitle, 400),
     ctaTitle: text(home.ctaTitle, 200),
-    ctaText: text(home.ctaText, 500),
-    showJournal: bool(home.showJournal),
   };
   await (await db()).setContent("home", data);
   refresh();
@@ -325,17 +275,14 @@ export async function saveHome(home: HomeContent): Promise<ActionResult> {
 export async function saveAbout(about: AboutContent): Promise<ActionResult> {
   await requireAdmin();
   const data: AboutContent = {
-    title: text(about.title, 100),
+    title: text(about.title, 100) || "Sobre",
     portrait: url(about.portrait),
     intro: text(about.intro, 2000),
     bio: longText(about.bio),
-    philosophyTitle: text(about.philosophyTitle, 100),
-    philosophy: longText(about.philosophy),
-    studioImage: url(about.studioImage),
-    timeline: pairs(about.timeline, ["year", "text"]),
-    awards: pairs(about.awards, ["year", "title", "org"]),
-    process: pairs(about.process, ["title", "text"]),
-    clients: text(about.clients, 5000),
+    education: rows(about.education, ["period", "title", "detail"]),
+    experience: rows(about.experience, ["period", "title", "detail"]),
+    tools: rows(about.tools, ["label", "value"]),
+    awards: rows(about.awards, ["year", "title"]),
   };
   await (await db()).setContent("about", data);
   refresh();
@@ -345,7 +292,8 @@ export async function saveAbout(about: AboutContent): Promise<ActionResult> {
 export async function saveSettings(s: Settings): Promise<ActionResult> {
   await requireAdmin();
   const email = text(s.email, 200);
-  if (email && !isEmail(email)) return fail("E-mail de contato inválido.");
+  // Aceita o espaço reservado "[e-mail]" do conteúdo inicial, mas não um endereço malformado.
+  if (email && !isEmail(email) && !/^\[.*\]$/.test(email)) return fail("E-mail de contato inválido.");
   if (!text(s.siteName, 200)) return fail("Informe o nome do site.");
   const data: Settings = {
     siteName: text(s.siteName, 200),
@@ -356,15 +304,15 @@ export async function saveSettings(s: Settings): Promise<ActionResult> {
     email,
     phone: text(s.phone, 50),
     whatsapp: text(s.whatsapp, 30).replace(/\D/g, ""),
-    address: text(s.address, 300),
     city: text(s.city, 200),
-    mapUrl: url(s.mapUrl),
     instagram: url(s.instagram),
     linkedin: url(s.linkedin),
-    pinterest: url(s.pinterest),
     behance: url(s.behance),
     cau: text(s.cau, 50),
-    officeHours: text(s.officeHours, 200),
+    education: text(s.education, 300),
+    availability: text(s.availability, 300),
+    portfolioPdf: url(s.portfolioPdf),
+    cvPdf: url(s.cvPdf),
   };
   await (await db()).setContent("settings", data);
   refresh();

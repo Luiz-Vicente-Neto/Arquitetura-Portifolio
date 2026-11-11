@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import DeleteButton from "@/components/admin/DeleteButton";
+import FileField from "@/components/admin/FileField";
 import { GalleryEditor, ImageField } from "@/components/admin/media";
 import { Card, SaveBar, Select, TextArea, TextInput, Toggle } from "@/components/admin/ui";
 import { useFormState } from "@/components/admin/useSave";
-import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteProject, saveProject, type ProjectInput } from "@/lib/actions/admin";
-import { PROJECT_STATUS_LABEL, type Category, type ProjectStatus } from "@/lib/types";
+import type { Category } from "@/lib/types";
 import { slugify, slugInput } from "@/lib/utils";
 
 export default function ProjectForm({ initial, categories }: { initial: ProjectInput; categories: Category[] }) {
@@ -60,52 +61,104 @@ export default function ProjectForm({ initial, categories }: { initial: ProjectI
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <Card title="Informações principais">
+          <Card title="Apresentação">
             <div className="grid gap-4">
+              <TextInput label="Título" value={p.title} onChange={(v) => set("title", v)} />
               <TextInput
-                label="Título"
-                value={p.title}
-                onChange={(v) => set("title", v)}
-                placeholder="Ex.: Casa Jabuticabeira"
-              />
-              <TextInput
-                label="Subtítulo"
+                label="Frase de apresentação"
                 value={p.subtitle}
                 onChange={(v) => set("subtitle", v)}
-                hint="Frase curta exibida na capa do projeto."
+                hint="Uma frase: o que é o projeto e onde fica. Aparece sob o título."
               />
-              <TextArea
-                label="Resumo"
-                rows={3}
-                value={p.summary}
-                onChange={(v) => set("summary", v)}
-                hint="Texto de destaque em fonte grande, logo abaixo da capa."
-              />
-              <TextArea
-                label="Descrição"
-                rows={10}
-                value={p.description}
-                onChange={(v) => set("description", v)}
-                hint="Separe parágrafos com uma linha em branco."
+              <TextInput
+                label="Programa"
+                value={p.program}
+                onChange={(v) => set("program", v)}
+                placeholder="Ex.: Habitação coletiva"
+                hint="Aparece nas listas, junto do título."
               />
             </div>
           </Card>
 
-          <Card title="Galeria" description="Fotos, desenhos, plantas e cortes do projeto.">
+          <Card
+            title="Estudo de caso"
+            description="Textos curtos. Blocos sem texto e sem imagens não aparecem no site."
+          >
+            <div className="grid gap-4">
+              <TextArea
+                label="01 · Problema"
+                rows={3}
+                value={p.summary}
+                onChange={(v) => set("summary", v)}
+                hint="Até 60 palavras: qual pergunta o trabalho responde, para quem e por que neste lugar."
+              />
+              <TextArea
+                label="02 · Lugar"
+                rows={3}
+                value={p.siteText}
+                onChange={(v) => set("siteText", v)}
+                hint="O que a leitura do território revelou. Acompanha mapas, implantação e diagramas."
+              />
+              <TextArea
+                label="03 · Partido"
+                rows={3}
+                value={p.conceptText}
+                onChange={(v) => set("conceptText", v)}
+                hint="A ideia central. Os diagramas contam o resto."
+              />
+              <TextArea
+                label="04 · Desenhos — “Como se constrói”"
+                rows={4}
+                value={p.constructionText}
+                onChange={(v) => set("constructionText", v)}
+                hint="Estrutura, materiais, conforto ambiental. Uma linha por tópico."
+              />
+              <TextArea
+                label="05 · Processo"
+                rows={3}
+                value={p.processText}
+                onChange={(v) => set("processText", v)}
+                hint="Croquis, maquetes de estudo, versões descartadas."
+              />
+            </div>
+          </Card>
+
+          <Card title="Imagens" description="Desenhos, diagramas, maquetes e perspectivas, organizados por bloco.">
             <GalleryEditor value={p.gallery} onChange={(v) => set("gallery", v)} />
           </Card>
 
-          <Card title="Ficha técnica">
+          <Card title="Ficha do projeto" description="Campos vazios não aparecem no site.">
             <div className="grid gap-4 md:grid-cols-2">
-              <TextInput label="Local" value={p.location} onChange={(v) => set("location", v)} placeholder="Cidade, UF" />
-              <TextInput label="Ano" value={p.year} onChange={(v) => set("year", v)} placeholder="2026" />
-              <TextInput label="Área" value={p.area} onChange={(v) => set("area", v)} placeholder="420 m²" />
-              <TextInput label="Cliente" value={p.client} onChange={(v) => set("client", v)} />
-              <TextInput label="Equipe" value={p.team} onChange={(v) => set("team", v)} className="md:col-span-2" />
               <TextInput
-                label="Fotografia / créditos de imagem"
-                value={p.photographer}
-                onChange={(v) => set("photographer", v)}
+                label="Contexto"
+                value={p.context}
+                onChange={(v) => set("context", v)}
+                placeholder="Ex.: Projeto VI · 7º semestre"
+              />
+              <TextInput label="Ano" value={p.year} onChange={(v) => set("year", v)} placeholder="2026" />
+              <TextInput label="Local" value={p.location} onChange={(v) => set("location", v)} placeholder="Bairro, Cidade — UF" />
+              <TextInput label="Escala ou área" value={p.area} onChange={(v) => set("area", v)} placeholder="Ex.: 4.200 m²" />
+              <TextInput label="Orientação" value={p.advisor} onChange={(v) => set("advisor", v)} placeholder="Nome do(a) professor(a)" />
+              <TextInput
+                label="Autoria"
+                value={p.authorship}
+                onChange={(v) => set("authorship", v)}
+                placeholder="Individual"
+                hint="Em equipe? Diga qual foi a sua parte."
+              />
+              <TextInput
+                label="Ferramentas"
+                value={p.tools}
+                onChange={(v) => set("tools", v)}
+                placeholder="Ex.: Revit, QGIS, maquete física"
+                className="md:col-span-2"
+              />
+              <TextArea
+                label="Créditos"
+                rows={3}
+                value={p.credits}
+                onChange={(v) => set("credits", v)}
+                hint="Colegas de equipe, orientação, banca, autoria das imagens."
                 className="md:col-span-2"
               />
             </div>
@@ -122,16 +175,30 @@ export default function ProjectForm({ initial, categories }: { initial: ProjectI
                 onChange={(v) => set("published", v)}
               />
               <Toggle
-                label="Destaque"
-                description="Aparece no carrossel e na página inicial"
+                label="Capa da página inicial"
+                description="O primeiro projeto marcado, na ordem da lista, abre a página inicial"
                 checked={p.featured}
                 onChange={(v) => set("featured", v)}
               />
             </div>
           </Card>
 
-          <Card title="Capa">
-            <ImageField label="Imagem de capa" value={p.cover} onChange={(v) => set("cover", v)} aspect="aspect-[4/3]" />
+          <Card title="Imagem de capa">
+            <ImageField
+              label="A vista que explica o projeto sozinha"
+              value={p.cover}
+              onChange={(v) => set("cover", v)}
+              aspect="aspect-video"
+              hint="Formato horizontal (16:9). Sem imagem, o site mostra uma área hachurada."
+            />
+          </Card>
+
+          <Card title="Caderno em PDF">
+            <FileField
+              label="Caderno ou prancha do projeto"
+              value={p.pdfUrl}
+              onChange={(v) => set("pdfUrl", v)}
+            />
           </Card>
 
           <Card title="Classificação">
@@ -141,15 +208,6 @@ export default function ProjectForm({ initial, categories }: { initial: ProjectI
                 value={p.categoryId}
                 onChange={(v) => set("categoryId", v)}
                 options={categories.map((c) => ({ value: c.id, label: c.name }))}
-              />
-              <Select<ProjectStatus>
-                label="Status"
-                value={p.status}
-                onChange={(v) => set("status", v)}
-                options={Object.entries(PROJECT_STATUS_LABEL).map(([value, label]) => ({
-                  value: value as ProjectStatus,
-                  label,
-                }))}
               />
               <TextInput
                 label="Endereço (slug)"

@@ -16,6 +16,7 @@ import path from "node:path";
 import { PgStore } from "../lib/data/pg-store";
 import { SCHEMA_SQL } from "../lib/data/schema";
 import { ensureBucket } from "../lib/data/supabase-storage";
+import { normalizeProject } from "../lib/normalize";
 import { createSeed } from "../lib/seed";
 import type { Database } from "../lib/types";
 
@@ -73,7 +74,8 @@ async function main() {
       throw new Error("O banco já tem conteúdo. A importação só é feita em banco vazio, para não sobrescrever dados.");
     }
     const data = JSON.parse(fs.readFileSync(file, "utf8")) as Database;
-    data.settings.profession ??= "";
+    // Conteúdo gravado por versões anteriores ganha os campos atuais.
+    data.projects = data.projects.map((p) => normalizeProject(p as unknown as Record<string, unknown>));
     for (const m of data.media) m.storagePath ??= path.basename(m.url);
     await store.seed(data);
     log(`Conteúdo importado de ${path.relative(process.cwd(), file)}.`);

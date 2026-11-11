@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { GalleryImage, MediaItem } from "@/lib/types";
+import { GALLERY_SECTIONS, GALLERY_SECTION_LABEL, type GalleryImage, type GallerySection, type MediaItem } from "@/lib/types";
 import { fetchMedia, uploadFiles } from "@/lib/upload-client";
 import { cx, img, uid } from "@/lib/utils";
 import { Button, useToast } from "./ui";
@@ -205,6 +205,8 @@ export function GalleryEditor({
 }) {
   const [open, setOpen] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  // Novas imagens entram no bloco escolhido aqui.
+  const [target, setTarget] = useState<GallerySection>("desenhos");
 
   const update = (i: number, patch: Partial<GalleryImage>) =>
     onChange(value.map((im, idx) => (idx === i ? { ...im, ...patch } : im)));
@@ -220,7 +222,7 @@ export function GalleryEditor({
     <div>
       {value.length === 0 && (
         <p className="mb-4 rounded-lg border-2 border-dashed border-[#d6d3cd] py-10 text-center text-sm text-[#6b675f]">
-          Nenhuma imagem na galeria.
+          Nenhuma imagem ainda. Envie plantas, cortes, diagramas, fotos de maquete e perspectivas.
         </p>
       )}
       <ul className="space-y-2">
@@ -251,6 +253,19 @@ export function GalleryEditor({
             />
             <select
               className="admin-input sm:!w-40"
+              value={im.section}
+              onChange={(e) => update(i, { section: e.target.value as GallerySection })}
+              title="Bloco da página em que a imagem aparece"
+              aria-label="Bloco"
+            >
+              {GALLERY_SECTIONS.map((sec) => (
+                <option key={sec} value={sec}>
+                  {GALLERY_SECTION_LABEL[sec]}
+                </option>
+              ))}
+            </select>
+            <select
+              className="admin-input sm:!w-36"
               value={im.layout}
               onChange={(e) => update(i, { layout: e.target.value as GalleryImage["layout"] })}
               title="Layout no site"
@@ -277,18 +292,34 @@ export function GalleryEditor({
           </li>
         ))}
       </ul>
-      <Button variant="secondary" className="mt-3" onClick={() => setOpen(true)}>
-        + Adicionar imagens
-      </Button>
-      <p className="mt-2 text-xs text-[#8a867e]">
-        Imagens em “meia largura” consecutivas aparecem lado a lado no site. Arraste para reordenar.
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Button variant="secondary" onClick={() => setOpen(true)}>
+          + Adicionar imagens em
+        </Button>
+        <select
+          className="admin-input !w-44"
+          value={target}
+          onChange={(e) => setTarget(e.target.value as GallerySection)}
+          aria-label="Bloco das novas imagens"
+        >
+          {GALLERY_SECTIONS.map((sec) => (
+            <option key={sec} value={sec}>
+              {GALLERY_SECTION_LABEL[sec]}
+            </option>
+          ))}
+        </select>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-[#8a867e]">
+        Cada imagem aparece no bloco escolhido (Lugar, Partido, Desenhos, Processo ou Imagens finais), na ordem desta
+        lista. Em Lugar e Desenhos a imagem aparece inteira, sem corte; “meia largura” consecutivas ficam lado a lado.
+        Partido e Processo viram uma grade de miniaturas. A legenda vira “Fig. 01 — legenda”.
       </p>
       <MediaPicker
         open={open}
         multiple
         onClose={() => setOpen(false)}
         onSelect={(urls) =>
-          onChange([...value, ...urls.map((url) => ({ id: uid("g"), url, caption: "", layout: "full" as const }))])
+          onChange([...value, ...urls.map((url) => ({ id: uid("g"), url, caption: "", layout: "full" as const, section: target }))])
         }
       />
     </div>

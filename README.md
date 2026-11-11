@@ -1,10 +1,11 @@
 # Stephany Ruiz Arquiteta e Urbanista — site + CMS
 
-Site portfólio da arquiteta e urbanista Stephany Ruiz, com painel administrativo (CMS) próprio para gerenciar todo o conteúdo.
+Portfólio da arquiteta e urbanista Stephany Ruiz (recém-formada): projetos da graduação apresentados como
+estudos de caso, currículo e contato, com painel administrativo (CMS) próprio para gerenciar todo o conteúdo.
 
-> **Conteúdo provisório:** os projetos, fotos, posts do jornal, equipe, clientes, trajetória, endereço, telefone,
-> WhatsApp, e-mail e links de redes sociais que vêm no seed são **exemplos** e devem ser substituídos pelo CMS antes de publicar.
-> O registro CAU e a lista de prêmios começam vazios (e ficam ocultos no site até serem preenchidos).
+> **Conteúdo inicial:** tudo o que aparece entre [colchetes] é espaço reservado para preencher pelo CMS, e os
+> projetos começam sem imagens (o site mostra uma área hachurada no lugar). Nada no conteúdo inicial afirma
+> fatos sobre a Stephany.
 
 Feito com **React 19 + [vinext](https://github.com/cloudflare/vinext)** (App Router do Next.js rodando sobre Vite 8), **Tailwind CSS v4**, server actions e route handlers.
 
@@ -12,7 +13,7 @@ Feito com **React 19 + [vinext](https://github.com/cloudflare/vinext)** (App Rou
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+npm run dev        # http://localhost:5173 (ou a porta que o Vite indicar)
 ```
 
 - Site: `http://localhost:5173`
@@ -31,31 +32,31 @@ npm run start      # vinext start (porta 3000 por padrão; use --port)
 ```
 app/
   (site)/            Site público
-    page.tsx           Home: hero em carrossel, manifesto, projetos em grade assimétrica,
-                       atuação, chamada "sobre", jornal, CTA
-    projetos/          Lista com filtros (tipologia/status) e modo Grade ou Índice
-    projetos/[slug]/   Capa em tela cheia, ficha técnica, texto, galeria com lightbox, próximo projeto
-    escritorio/        Biografia, trajetória, filosofia, processo, prêmios, clientes
-    jornal/            Notícias, imprensa, prêmios e eventos
-    contato/           Dados de contato + formulário (vai para "Mensagens" no CMS)
+    page.tsx           Início: apresentação, quadro de resumo, projeto de capa, índice de projetos, sobre
+    projetos/          Grade com filtro por categoria (TFG, Arquitetura, Urbanismo…)
+    projetos/[slug]/   Estudo de caso: ficha, Problema, Lugar, Partido, Desenhos, Processo,
+                       Imagens finais, créditos, PDF do caderno e próximo projeto
+    sobre/             Retrato, texto, formação, experiência, ferramentas, reconhecimentos
+    contato/           E-mail, WhatsApp, redes, downloads e formulário (vai para "Mensagens")
   admin/
     login/             Tela de login
-    (panel)/           Painel (protegido): projetos, categorias, jornal, mídia,
-                       páginas (home/escritório), mensagens, configurações, conta
+    (panel)/           Painel (protegido): projetos, categorias, mídia, páginas (início / sobre),
+                       mensagens, configurações, conta
   api/admin/upload     Upload de imagens/PDF (autenticado)
   api/admin/media      Lista da biblioteca de mídia (autenticado)
-  uploads/[...path]    Serve os arquivos enviados
-components/site        Componentes do site (header, hero, galeria, filtros…)
-components/admin       Componentes do CMS (campos, seletor de mídia, editor de galeria…)
+  uploads/[...path]    Serve os arquivos enviados (modo local)
+components/site        Componentes do site (cabeçalho, rodapé, galeria, filtros…)
+components/admin       Componentes do CMS (campos, seletor de mídia, editor de imagens, PDF…)
 lib/
   db.ts                Ponto único de acesso aos dados (escolhe JSON ou Postgres)
+  normalize.ts         Completa campos de conteúdo gravado por versões anteriores
   data/
     store.ts           Interface de armazenamento comum aos dois modos
     json-store.ts      Modo local (storage/content.json)
     pg-store.ts        PostgreSQL / Supabase
     schema.ts          Schema SQL (aplicado automaticamente)
   files.ts             Uploads: disco local ou Supabase Storage
-  seed.ts              Conteúdo inicial de exemplo
+  seed.ts              Conteúdo inicial (espaços reservados entre colchetes)
   auth.ts              Sessão por cookie assinado (HMAC) + senha com scrypt
   actions/             Server actions (admin e formulário de contato)
 scripts/db-setup.ts    npm run db:setup — prepara o banco do Supabase
@@ -65,13 +66,24 @@ storage/               (gerado, modo local) content.json + uploads/ — fora do 
 
 ## O que o CMS gerencia
 
-- **Projetos**: título, subtítulo, resumo, descrição, capa, galeria (upload, legendas, largura total/meia largura, arrastar para reordenar), ficha técnica (local, ano, área, cliente, equipe, fotografia), categoria, status (concluído / em andamento / conceito), destaque, publicado/rascunho, ordem de exibição e slug.
-- **Categorias** (tipologias usadas nos filtros).
-- **Jornal**: notícias, imprensa, prêmios e eventos.
-- **Página inicial** e **Escritório**: todos os textos, imagens e listas (serviços, trajetória, processo, prêmios, clientes).
-- **Mídia**: biblioteca de arquivos com upload por arrastar e soltar.
+- **Projetos**
+  - Apresentação: título, frase de apresentação, programa.
+  - Estudo de caso: textos de Problema, Lugar, Partido, "Como se constrói" e Processo.
+  - Imagens: cada uma vai para um bloco (Lugar, Partido, Desenhos, Processo, Imagens finais), com legenda
+    ("Fig. 01 — …") e largura total ou meia largura. Em Lugar e Desenhos a imagem aparece inteira, sem corte.
+  - Ficha: contexto acadêmico, ano, local, escala, orientação, autoria, ferramentas, créditos.
+  - Capa, caderno em PDF, categoria, publicado/rascunho, ordem e slug.
+  - "Capa da página inicial": o primeiro projeto marcado abre a página inicial.
+- **Categorias** usadas no filtro de projetos.
+- **Página inicial**: linha de abertura, título e chamada do rodapé.
+- **Sobre e currículo**: retrato, textos, formação, experiência, ferramentas e reconhecimentos.
+- **Configurações**: nome, título profissional, formação, cidade, disponibilidade, portfólio e currículo em PDF,
+  e-mail, WhatsApp, redes e descrição para o Google.
+- **Mídia**: biblioteca de arquivos, com aviso de onde cada um é usado.
 - **Mensagens**: caixa de entrada do formulário de contato.
-- **Configurações**: nome, slogan, SEO, contato, endereço, WhatsApp, redes sociais e registro CAU.
+
+O que estiver vazio não aparece no site: blocos sem texto e sem imagens, campos da ficha, seções do currículo,
+botões de PDF e links de redes. O painel inicial tem uma lista "Antes de divulgar" com o que falta preencher.
 
 Atalho: **Ctrl/Cmd + S** salva qualquer formulário do painel. Rascunhos podem ser pré-visualizados no site
 com uma sessão ativa no painel (aparece uma faixa de aviso); visitantes recebem 404.
@@ -148,8 +160,8 @@ requisição. Prefere criar as tabelas manualmente? Cole `supabase/schema.sql` n
 |---|---|
 | `site_content` | Documentos únicos em JSONB: `settings`, `home`, `about`, `user` (login do painel), `secret` |
 | `categories` | Tipologias, com ordem |
-| `projects` | Projetos; galeria em JSONB; `position` define a ordem no site |
-| `posts` | Jornal |
+| `projects` | Projetos: ficha, textos do estudo de caso e imagens (JSONB, com o bloco de cada uma); `position` define a ordem |
+| `posts` | Sem uso (o jornal saiu do site; a tabela fica para bancos já criados) |
 | `messages` | Formulário de contato |
 | `media` | Biblioteca de arquivos (URL pública + caminho no Storage) |
 

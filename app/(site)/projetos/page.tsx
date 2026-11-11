@@ -13,12 +13,11 @@ export default async function ProjectsPage({
   const [projects, categories] = await Promise.all([getPublishedProjects(), getCategories()]);
 
   return (
-    <div className="wrap pt-32 md:pt-44">
-      <header className="mb-12 grid gap-6 md:mb-16 md:grid-cols-12">
-        <h1 className="font-display text-[clamp(3rem,8vw,8rem)] leading-[0.9] md:col-span-8">Projetos</h1>
-        <p className="self-end text-[15px] leading-relaxed text-stone md:col-span-4">
-          Uma seleção de obras construídas, projetos em andamento e propostas de concurso — casas, interiores,
-          espaços de trabalho e equipamentos culturais.
+    <div className="wrap">
+      <header className="flex flex-wrap items-end justify-between gap-x-16 gap-y-6 pt-[clamp(3rem,7vw,6rem)] pb-10">
+        <h1 className="text-[clamp(2.75rem,7vw,6rem)] leading-none font-medium tracking-[-0.03em]">Projetos</h1>
+        <p className="max-w-[26rem] flex-[0_1_26rem] text-[17px] text-stone">
+          Trabalhos selecionados da graduação: arquitetura, urbanismo e paisagismo.
         </p>
       </header>
       <ProjectsExplorer projects={projects} categories={categories} initialCategory={categoria} />

@@ -1,5 +1,6 @@
 import postgres from "postgres";
-import type { Category, Database, MediaItem, Message, Post, PostType, Project, ProjectStatus } from "../types";
+import { normalizeGallery } from "../normalize";
+import type { Category, Database, MediaItem, Message, Post, PostType, Project } from "../types";
 import { SCHEMA_SQL } from "./schema";
 import type { ContentKey, ContentMap, Store } from "./store";
 
@@ -17,17 +18,24 @@ function toProject(r: Row): Project {
     title: str(r.title),
     subtitle: str(r.subtitle),
     categoryId: str(r.category_id),
-    status: str(r.status) as ProjectStatus,
+    program: str(r.program),
+    context: str(r.study_context),
     location: str(r.location),
     year: str(r.year),
     area: str(r.area),
-    client: str(r.client),
-    team: str(r.team),
-    photographer: str(r.photographer),
+    advisor: str(r.advisor),
+    authorship: str(r.authorship),
+    tools: str(r.tools),
     summary: str(r.summary),
-    description: str(r.description),
+    siteText: str(r.site_text),
+    // A coluna "description" já existia: guarda o texto do bloco "Partido".
+    conceptText: str(r.description),
+    constructionText: str(r.construction_text),
+    processText: str(r.process_text),
+    credits: str(r.credits),
     cover: str(r.cover),
-    gallery: (r.gallery as Project["gallery"]) ?? [],
+    pdfUrl: str(r.pdf_url),
+    gallery: normalizeGallery(r.gallery),
     featured: Boolean(r.featured),
     published: Boolean(r.published),
     order: Number(r.position ?? 0),
@@ -204,23 +212,27 @@ export class PgStore implements Store {
   async upsertProject(p: Project) {
     await this.sql`
       insert into projects (
-        id, slug, title, subtitle, category_id, status, location, year, area, client, team,
-        photographer, summary, description, cover, gallery, featured, published, position,
+        id, slug, title, subtitle, category_id, program, study_context, location, year, area,
+        advisor, authorship, tools, summary, site_text, description, construction_text,
+        process_text, credits, cover, pdf_url, gallery, featured, published, position,
         created_at, updated_at
       ) values (
-        ${p.id}, ${p.slug}, ${p.title}, ${p.subtitle}, ${p.categoryId || null}, ${p.status},
-        ${p.location}, ${p.year}, ${p.area}, ${p.client}, ${p.team}, ${p.photographer},
-        ${p.summary}, ${p.description}, ${p.cover}, ${json(this.sql, p.gallery)},
+        ${p.id}, ${p.slug}, ${p.title}, ${p.subtitle}, ${p.categoryId || null}, ${p.program},
+        ${p.context}, ${p.location}, ${p.year}, ${p.area}, ${p.advisor}, ${p.authorship},
+        ${p.tools}, ${p.summary}, ${p.siteText}, ${p.conceptText}, ${p.constructionText},
+        ${p.processText}, ${p.credits}, ${p.cover}, ${p.pdfUrl}, ${json(this.sql, p.gallery)},
         ${p.featured}, ${p.published}, ${p.order}, ${p.createdAt}, ${p.updatedAt}
       )
       on conflict (id) do update set
         slug = excluded.slug, title = excluded.title, subtitle = excluded.subtitle,
-        category_id = excluded.category_id, status = excluded.status, location = excluded.location,
-        year = excluded.year, area = excluded.area, client = excluded.client, team = excluded.team,
-        photographer = excluded.photographer, summary = excluded.summary,
-        description = excluded.description, cover = excluded.cover, gallery = excluded.gallery,
-        featured = excluded.featured, published = excluded.published, position = excluded.position,
-        updated_at = excluded.updated_at`;
+        category_id = excluded.category_id, program = excluded.program,
+        study_context = excluded.study_context, location = excluded.location, year = excluded.year,
+        area = excluded.area, advisor = excluded.advisor, authorship = excluded.authorship,
+        tools = excluded.tools, summary = excluded.summary, site_text = excluded.site_text,
+        description = excluded.description, construction_text = excluded.construction_text,
+        process_text = excluded.process_text, credits = excluded.credits, cover = excluded.cover,
+        pdf_url = excluded.pdf_url, gallery = excluded.gallery, featured = excluded.featured,
+        published = excluded.published, position = excluded.position, updated_at = excluded.updated_at`;
   }
 
   async deleteProject(id: string) {
@@ -240,7 +252,7 @@ export class PgStore implements Store {
     else await this.sql`update projects set featured = ${value}, updated_at = now() where id = ${id}`;
   }
 
-  /* ---------- jornal ---------- */
+  /* ---------- jornal (fora do site; mantido para bancos já criados) ---------- */
 
   async listPosts() {
     const rows = await this.sql.unsafe(`select ${POST_COLS} from posts order by date desc, created_at desc`);

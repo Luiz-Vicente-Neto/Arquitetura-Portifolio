@@ -8,3 +8,6 @@ next-env.d.ts
 
 # conteúdo do CMS
 /storage/
+
+# build do TypeScript
+*.tsbuildinfo

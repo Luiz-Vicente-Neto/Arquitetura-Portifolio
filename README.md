@@ -1,115 +1,139 @@
-# Stephany Ruiz Arquiteta e Urbanista — site + CMS
+<div align="center">
 
-Portfólio da arquiteta e urbanista Stephany Ruiz (recém-formada): projetos da graduação apresentados como
-estudos de caso, currículo e contato, com painel administrativo (CMS) próprio para gerenciar todo o conteúdo.
+# Arq Studio
 
-> **Conteúdo inicial:** tudo o que aparece entre [colchetes] é espaço reservado para preencher pelo CMS, e os
-> projetos começam sem imagens (o site mostra uma área hachurada no lugar). Nada no conteúdo inicial afirma
-> fatos sobre a Stephany.
+**Portfólio de arquitetura com CMS próprio**
 
-Feito com **React 19 + [vinext](https://github.com/cloudflare/vinext)** (App Router do Next.js rodando sobre Vite 8), **Tailwind CSS v4**, server actions e route handlers.
+Site para arquitetos e urbanistas apresentarem projetos como estudos de caso, com currículo, contato
+e um painel administrativo completo para gerenciar tudo sem tocar no código.
 
-## Rodando
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![vinext](https://img.shields.io/badge/vinext-App_Router-000000)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-opcional-3FCF8E?logo=supabase&logoColor=white)
+
+</div>
+
+---
+
+## Sobre o projeto
+
+Feito para o portfólio de uma arquiteta e urbanista recém-formada: os projetos da graduação viram
+**estudos de caso** (Problema → Lugar → Partido → Desenhos → Processo → Imagens finais), acompanhados
+de ficha técnica, caderno em PDF e créditos.
+
+Todo o conteúdo é editável pelo **painel em `/admin`**. O conteúdo inicial usa espaços reservados entre
+`[colchetes]` e os projetos começam sem imagens (o site mostra uma área hachurada no lugar).
+
+### Destaques
+
+- 🏛️ **Estudos de caso** com blocos de texto e imagem, legendas no estilo `Fig. 01 — …` e largura total ou meia largura
+- 🗂️ **Filtro por categoria** (TFG, Arquitetura, Urbanismo…) e projeto de capa na página inicial
+- ✍️ **CMS completo**: projetos, categorias, páginas, mídia, mensagens, configurações e conta
+- 👀 **Pré-visualização de rascunhos** para quem está logado; visitantes recebem 404
+- 🧹 **Nada vazio aparece no site**, e o painel mostra uma lista "Antes de divulgar" com o que falta
+- ⌨️ **Ctrl/Cmd + S** salva qualquer formulário do painel
+- 💾 **Dois modos de armazenamento**: arquivo JSON local (zero configuração) ou Supabase (Postgres + Storage)
+- 🔒 **Segurança**: senha com `scrypt`, sessão em cookie assinado (HMAC), limite de tentativas de login e RLS no banco
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| UI | React 19, Tailwind CSS v4 |
+| Framework | [vinext](https://github.com/cloudflare/vinext): App Router do Next.js sobre Vite 8 |
+| Back-end | Server actions e route handlers |
+| Dados | JSON local **ou** PostgreSQL (Supabase) |
+| Arquivos | Disco local **ou** Supabase Storage |
+
+## Começando
+
+**Pré-requisito:** Node.js 20 ou mais recente.
 
 ```bash
+git clone <url-do-repositorio>
+cd Arq
 npm install
-npm run dev        # http://localhost:5173 (ou a porta que o Vite indicar)
+npm run dev
 ```
 
-- Site: `http://localhost:5173`
-- CMS: `http://localhost:5173/admin`
-  - Primeiro acesso: **admin@studio.com** / **admin123** — troque em *Minha conta*.
+| | Endereço |
+|---|---|
+| Site | http://localhost:5173 |
+| Painel | http://localhost:5173/admin |
 
-Produção:
+Sem nenhuma variável de ambiente, o projeto roda em **modo local**: o conteúdo fica em `storage/content.json`
+e os uploads em `storage/uploads/`. Os dois ficam fora do git.
 
-```bash
-npm run build
-npm run start      # vinext start (porta 3000 por padrão; use --port)
-```
+> [!IMPORTANT]
+> **Primeiro acesso ao painel:** `admin@studio.com` / `admin123`.
+> Troque o e-mail e a senha em **Minha conta** antes de publicar o site. Enquanto a senha padrão estiver
+> ativa, a tela de login exibe essas credenciais.
 
-## Estrutura
+### Scripts
 
-```
-app/
-  (site)/            Site público
-    page.tsx           Início: apresentação, quadro de resumo, projeto de capa, índice de projetos, sobre
-    projetos/          Grade com filtro por categoria (TFG, Arquitetura, Urbanismo…)
-    projetos/[slug]/   Estudo de caso: ficha, Problema, Lugar, Partido, Desenhos, Processo,
-                       Imagens finais, créditos, PDF do caderno e próximo projeto
-    sobre/             Retrato, texto, formação, experiência, ferramentas, reconhecimentos
-    contato/           E-mail, WhatsApp, redes, downloads e formulário (vai para "Mensagens")
-  admin/
-    login/             Tela de login
-    (panel)/           Painel (protegido): projetos, categorias, mídia, páginas (início / sobre),
-                       mensagens, configurações, conta
-  api/admin/upload     Upload de imagens/PDF (autenticado)
-  api/admin/media      Lista da biblioteca de mídia (autenticado)
-  uploads/[...path]    Serve os arquivos enviados (modo local)
-components/site        Componentes do site (cabeçalho, rodapé, galeria, filtros…)
-components/admin       Componentes do CMS (campos, seletor de mídia, editor de imagens, PDF…)
-lib/
-  db.ts                Ponto único de acesso aos dados (escolhe JSON ou Postgres)
-  normalize.ts         Completa campos de conteúdo gravado por versões anteriores
-  data/
-    store.ts           Interface de armazenamento comum aos dois modos
-    json-store.ts      Modo local (storage/content.json)
-    pg-store.ts        PostgreSQL / Supabase
-    schema.ts          Schema SQL (aplicado automaticamente)
-  files.ts             Uploads: disco local ou Supabase Storage
-  seed.ts              Conteúdo inicial (espaços reservados entre colchetes)
-  auth.ts              Sessão por cookie assinado (HMAC) + senha com scrypt
-  actions/             Server actions (admin e formulário de contato)
-scripts/db-setup.ts    npm run db:setup — prepara o banco do Supabase
-supabase/schema.sql    SQL para colar no SQL Editor do Supabase (opcional)
-storage/               (gerado, modo local) content.json + uploads/ — fora do git
-```
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run start` | Sobe o build (porta 3000; use `--port` para mudar) |
+| `npm run typecheck` | Checagem de tipos |
+| `npm run db:setup` | Prepara o banco no Supabase (tabelas, conteúdo inicial, bucket) |
+| `npm run db:schema` | Gera `supabase/schema.sql` a partir do código |
 
 ## O que o CMS gerencia
 
-- **Projetos**
-  - Apresentação: título, frase de apresentação, programa.
-  - Estudo de caso: textos de Problema, Lugar, Partido, "Como se constrói" e Processo.
-  - Imagens: cada uma vai para um bloco (Lugar, Partido, Desenhos, Processo, Imagens finais), com legenda
-    ("Fig. 01 — …") e largura total ou meia largura. Em Lugar e Desenhos a imagem aparece inteira, sem corte.
-  - Ficha: contexto acadêmico, ano, local, escala, orientação, autoria, ferramentas, créditos.
-  - Capa, caderno em PDF, categoria, publicado/rascunho, ordem e slug.
-  - "Capa da página inicial": o primeiro projeto marcado abre a página inicial.
+<details>
+<summary><b>Projetos</b></summary>
+
+- **Apresentação:** título, frase de apresentação, programa.
+- **Estudo de caso:** textos de Problema, Lugar, Partido, "Como se constrói" e Processo.
+- **Imagens:** cada uma vai para um bloco (Lugar, Partido, Desenhos, Processo, Imagens finais), com legenda
+  e largura total ou meia largura. Em Lugar e Desenhos a imagem aparece inteira, sem corte.
+- **Ficha:** contexto acadêmico, ano, local, escala, orientação, autoria, ferramentas, créditos.
+- Capa, caderno em PDF, categoria, publicado/rascunho, ordem e slug.
+- **Capa da página inicial:** o primeiro projeto marcado abre a home.
+
+</details>
+
+<details>
+<summary><b>Demais seções</b></summary>
+
 - **Categorias** usadas no filtro de projetos.
-- **Página inicial**: linha de abertura, título e chamada do rodapé.
-- **Sobre e currículo**: retrato, textos, formação, experiência, ferramentas e reconhecimentos.
-- **Configurações**: nome, título profissional, formação, cidade, disponibilidade, portfólio e currículo em PDF,
+- **Página inicial:** linha de abertura, título e chamada do rodapé.
+- **Sobre e currículo:** retrato, textos, formação, experiência, ferramentas e reconhecimentos.
+- **Configurações:** nome, título profissional, formação, cidade, disponibilidade, portfólio e currículo em PDF,
   e-mail, WhatsApp, redes e descrição para o Google.
-- **Mídia**: biblioteca de arquivos, com aviso de onde cada um é usado.
-- **Mensagens**: caixa de entrada do formulário de contato.
+- **Mídia:** biblioteca de arquivos, indicando onde cada um é usado.
+- **Mensagens:** caixa de entrada do formulário de contato.
 
-O que estiver vazio não aparece no site: blocos sem texto e sem imagens, campos da ficha, seções do currículo,
-botões de PDF e links de redes. O painel inicial tem uma lista "Antes de divulgar" com o que falta preencher.
+</details>
 
-Atalho: **Ctrl/Cmd + S** salva qualquer formulário do painel. Rascunhos podem ser pré-visualizados no site
-com uma sessão ativa no painel (aparece uma faixa de aviso); visitantes recebem 404.
+## Armazenamento: local ou Supabase
 
-## Banco de dados: modo local ou Supabase
+O modo é escolhido pelas variáveis de ambiente, sem mudar código:
 
-O sistema escolhe o armazenamento pelas variáveis de ambiente — nenhum código precisa mudar:
-
-| Situação | Conteúdo | Arquivos enviados |
+| Variáveis definidas | Conteúdo | Arquivos enviados |
 |---|---|---|
-| Sem variáveis (padrão) | `storage/content.json` | `storage/uploads/` |
-| `DATABASE_URL` definida | PostgreSQL (Supabase) | `storage/uploads/` |
+| Nenhuma (padrão) | `storage/content.json` | `storage/uploads/` |
+| `DATABASE_URL` | PostgreSQL (Supabase) | `storage/uploads/` |
 | `DATABASE_URL` + `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | PostgreSQL (Supabase) | Supabase Storage |
 
-Para hospedagem serverless (Vercel, Netlify, Cloudflare…) use a **terceira linha**: lá não existe disco persistente.
+Em hospedagem **serverless** (Vercel, Netlify, Cloudflare…) use a terceira linha, porque lá não existe disco persistente.
 
-### Configurando o Supabase
+<details>
+<summary><b>Passo a passo do Supabase</b></summary>
 
 1. Crie um projeto em [supabase.com](https://supabase.com).
-2. **Connection string** — *Project Settings → Database → Connection string → URI*:
+2. Pegue a **connection string** em *Project Settings → Database → Connection string → URI*:
    - **Transaction pooler** (porta `6543`) para serverless;
-   - **Session pooler** (porta `5432`) para um servidor Node tradicional.
-   - Evite a "Direct connection" (`db.<projeto>.supabase.co`): ela só funciona via IPv6.
-3. **Chaves da API** — *Project Settings → API*: copie a *Project URL* e a *service_role key*.
-   A service_role ignora as regras de acesso: use **somente no servidor**, nunca no navegador.
-4. Crie o `.env.local` a partir do exemplo e preencha:
+   - **Session pooler** (porta `5432`) para um servidor Node tradicional;
+   - evite a "Direct connection" (`db.<projeto>.supabase.co`), que só funciona via IPv6.
+3. Em *Project Settings → API*, copie a **Project URL** e a **service_role key**.
+   A service_role ignora as regras de acesso: use **somente no servidor**.
+4. Crie o `.env.local`:
 
    ```bash
    cp .env.example .env.local
@@ -122,7 +146,7 @@ Para hospedagem serverless (Vercel, Netlify, Cloudflare…) use a **terceira lin
    SESSION_SECRET=uma-string-longa-e-aleatoria
    ```
 
-   > Se a senha do banco tiver `$`, escreva `\$` — o carregador de `.env` expande `$VARIAVEIS`.
+   > Se a senha do banco tiver `$`, escreva `\$`: o carregador de `.env` expande `$VARIAVEIS`.
 
 5. Prepare o banco:
 
@@ -130,48 +154,45 @@ Para hospedagem serverless (Vercel, Netlify, Cloudflare…) use a **terceira lin
    npm run db:setup
    ```
 
-   Isso cria as tabelas, insere o conteúdo inicial (se o banco estiver vazio) e cria o bucket público
-   `media` no Storage. Pode rodar quantas vezes quiser: nada existente é sobrescrito.
+   Cria as tabelas, insere o conteúdo inicial (se o banco estiver vazio) e cria o bucket público `media`.
+   Pode rodar quantas vezes quiser: nada existente é sobrescrito.
 
-   Já cadastrou conteúdo no modo local e quer levá-lo para o Supabase?
+   Para levar o conteúdo do modo local para o Supabase (somente em banco vazio):
 
    ```bash
    npm run db:setup -- --import-json
    ```
 
-   (só funciona em banco vazio; imagens já enviadas localmente precisam ser reenviadas pelo CMS.)
+   Imagens enviadas no modo local precisam ser reenviadas pelo CMS.
 
-6. `npm run dev` — pronto. O painel em *Mídia* indica qual armazenamento está em uso.
+6. `npm run dev`. Em *Mídia*, o painel mostra qual armazenamento está em uso.
 
-Mesmo sem rodar o `db:setup`, a aplicação cria as tabelas e o conteúdo inicial sozinha na primeira
-requisição. Prefere criar as tabelas manualmente? Cole `supabase/schema.sql` no *SQL Editor*
-(gerado a partir do código com `npm run db:schema`).
+Mesmo sem o `db:setup`, a aplicação cria as tabelas e o conteúdo inicial na primeira requisição.
+Se preferir criar as tabelas à mão, cole `supabase/schema.sql` no *SQL Editor*.
 
-### Segurança no Supabase
+</details>
 
-- Todas as tabelas são criadas com **Row Level Security ligado e sem policies**: a API pública do
-  Supabase (chave `anon`) não consegue ler nem escrever nada. Só o servidor, pela conexão direta, acessa os dados.
-- O bucket `media` é público para leitura (as imagens aparecem no site); escrever e apagar exige a service_role,
-  que fica apenas no servidor.
-
-### Modelo de dados
+<details>
+<summary><b>Modelo de dados</b></summary>
 
 | Tabela | Conteúdo |
 |---|---|
 | `site_content` | Documentos únicos em JSONB: `settings`, `home`, `about`, `user` (login do painel), `secret` |
 | `categories` | Tipologias, com ordem |
-| `projects` | Projetos: ficha, textos do estudo de caso e imagens (JSONB, com o bloco de cada uma); `position` define a ordem |
-| `posts` | Sem uso (o jornal saiu do site; a tabela fica para bancos já criados) |
+| `projects` | Ficha, textos do estudo de caso e imagens (JSONB); `position` define a ordem |
+| `posts` | Sem uso (mantida para bancos já criados) |
 | `messages` | Formulário de contato |
 | `media` | Biblioteca de arquivos (URL pública + caminho no Storage) |
 
+</details>
+
 ## Variáveis de ambiente
 
-Todas opcionais — veja `.env.example` (com comentários).
+Todas são opcionais. O [`.env.example`](.env.example) traz cada uma comentada.
 
 | Variável | Uso |
 |---|---|
-| `DATABASE_URL` | Conexão PostgreSQL. Ativa o modo banco de dados |
+| `DATABASE_URL` | Conexão PostgreSQL; ativa o modo banco de dados |
 | `DATABASE_POOL_MAX` | Conexões simultâneas por instância (padrão 5) |
 | `DATABASE_SSL=disable` | Desliga TLS (apenas Postgres local sem TLS) |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Ativam o Supabase Storage para os uploads |
@@ -180,16 +201,61 @@ Todas opcionais — veja `.env.example` (com comentários).
 | `STORAGE_DIR` | Pasta do modo local (padrão `./storage`) |
 | `INSECURE_COOKIES=1` | Permite login em produção sem HTTPS (só para testes) |
 
-## Segurança do painel
+> [!CAUTION]
+> Nunca faça commit do `.env.local`. Ele já está no `.gitignore`.
 
-- Senha com hash `scrypt`; sessão em cookie `httpOnly` assinado (HMAC), válido por 7 dias.
+## Segurança
+
+- Senha com hash `scrypt`; sessão em cookie `httpOnly` assinado (HMAC), válida por 7 dias.
 - Login bloqueado por 2 minutos após 5 tentativas erradas (por IP, em memória por instância).
-- Todas as server actions e rotas de upload verificam a sessão e validam/limpam os dados recebidos.
-- Uploads: só imagens e PDF, até 15 MB, com nome de arquivo gerado pelo servidor.
+- Server actions e rotas de upload verificam a sessão e validam os dados recebidos.
+- Uploads: só imagens e PDF, até 15 MB, com nome gerado pelo servidor.
+- No Supabase, todas as tabelas têm **Row Level Security ligado e sem policies**: a chave pública `anon`
+  não lê nem escreve nada. O bucket `media` é público só para leitura.
+
+## Estrutura
+
+<details>
+<summary>Ver árvore de pastas</summary>
+
+```
+app/
+  (site)/              Site público
+    page.tsx             Início: apresentação, resumo, projeto de capa, índice, sobre
+    projetos/            Grade com filtro por categoria
+    projetos/[slug]/     Estudo de caso completo
+    sobre/               Retrato, formação, experiência, ferramentas, reconhecimentos
+    contato/             E-mail, WhatsApp, redes, downloads e formulário
+  admin/
+    login/               Tela de login
+    (panel)/             Painel protegido
+  api/admin/upload       Upload de imagens/PDF (autenticado)
+  api/admin/media        Biblioteca de mídia (autenticado)
+  uploads/[...path]      Serve os arquivos enviados (modo local)
+components/
+  site/                  Cabeçalho, rodapé, galeria, filtros…
+  admin/                 Campos, seletor de mídia, editor de imagens…
+lib/
+  db.ts                  Ponto único de acesso aos dados (JSON ou Postgres)
+  data/                  Implementações de armazenamento e schema SQL
+  files.ts               Uploads: disco local ou Supabase Storage
+  auth.ts                Sessão assinada + senha com scrypt
+  seed.ts                Conteúdo inicial
+  actions/               Server actions (admin e contato)
+scripts/db-setup.ts      npm run db:setup
+supabase/schema.sql      SQL para o SQL Editor do Supabase
+storage/                 Gerado no modo local (fora do git)
+```
+
+</details>
 
 ## Hospedagem
 
-- **Servidor Node com disco** (VPS, Railway, Render, Fly.io com volume): funciona em qualquer modo.
-- **Serverless**: use Supabase para banco **e** arquivos.
+| Onde | Configuração |
+|---|---|
+| Servidor Node com disco (VPS, Railway, Render, Fly.io com volume) | Funciona em qualquer modo |
+| Serverless (Vercel, Netlify, Cloudflare) | Supabase para banco **e** arquivos |
 
-As imagens de exemplo vêm do Unsplash e servem apenas como conteúdo provisório.
+## Créditos
+
+As imagens de exemplo vêm do [Unsplash](https://unsplash.com) e servem apenas como conteúdo provisório.

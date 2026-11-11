@@ -7,8 +7,8 @@ import { formatDate, img } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Jornal" };
 
-export default function JournalPage() {
-  const posts = getPublishedPosts();
+export default async function JournalPage() {
+  const posts = await getPublishedPosts();
   const [first, ...rest] = posts;
 
   return (

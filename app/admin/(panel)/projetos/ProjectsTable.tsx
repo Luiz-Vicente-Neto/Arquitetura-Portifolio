@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Badge, Button, useToast } from "@/components/admin/ui";
-import { deleteProject, moveProject, toggleProjectFlag } from "@/lib/actions/admin";
+import { deleteProject, moveProject, toggleProjectFlag, type ActionResult } from "@/lib/actions/admin";
 import { PROJECT_STATUS_LABEL, type Category, type Project } from "@/lib/types";
 import { img } from "@/lib/utils";
 
@@ -15,10 +15,11 @@ export default function ProjectsTable({ projects, categories }: { projects: Proj
   const [q, setQ] = useState("");
   const catName = Object.fromEntries(categories.map((c) => [c.id, c.name]));
 
-  const run = (fn: () => Promise<unknown>, msg?: string) =>
+  const run = (fn: () => Promise<ActionResult>, msg?: string) =>
     start(async () => {
-      await fn();
-      if (msg) toast(msg);
+      const res = await fn();
+      if (!res.ok) toast(res.error ?? "Não foi possível concluir a ação.", "error");
+      else if (msg) toast(msg);
       router.refresh();
     });
 

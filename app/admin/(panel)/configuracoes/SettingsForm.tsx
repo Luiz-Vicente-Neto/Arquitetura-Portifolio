@@ -19,8 +19,9 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
           <div className="grid gap-4 md:grid-cols-2">
             {t("siteName", "Nome do site / escritório")}
             {t("architectName", "Nome exibido no cabeçalho")}
-            {t("tagline", "Slogan", { className: "md:col-span-2" })}
+            {t("profession", "Título profissional", { hint: "Aparece sob o nome no cabeçalho. Ex.: Arquiteta e Urbanista" })}
             {t("cau", "Registro profissional", { placeholder: "CAU A000000-0" })}
+            {t("tagline", "Slogan", { className: "md:col-span-2" })}
           </div>
         </Card>
 

@@ -10,8 +10,7 @@ export default async function ProjectsPage({
   searchParams: Promise<{ categoria?: string }>;
 }) {
   const { categoria } = await searchParams;
-  const projects = getPublishedProjects();
-  const categories = getCategories();
+  const [projects, categories] = await Promise.all([getPublishedProjects(), getCategories()]);
 
   return (
     <div className="wrap pt-32 md:pt-44">

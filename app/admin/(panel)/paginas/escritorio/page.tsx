@@ -1,6 +1,6 @@
-import { readDb } from "@/lib/db";
+import { getAbout } from "@/lib/db";
 import AboutForm from "./AboutForm";
 
-export default function AboutContentPage() {
-  return <AboutForm initial={readDb().about} />;
+export default async function AboutContentPage() {
+  return <AboutForm initial={await getAbout()} />;
 }

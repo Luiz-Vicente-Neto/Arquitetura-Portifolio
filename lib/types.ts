@@ -84,6 +84,8 @@ export interface Message {
 export interface MediaItem {
   id: string;
   url: string;
+  /** Caminho no armazenamento de arquivos (disco local ou bucket do Supabase). */
+  storagePath: string;
   name: string;
   size: number;
   type: string;
@@ -98,6 +100,8 @@ export interface TitleText {
 export interface Settings {
   siteName: string;
   architectName: string;
+  /** Título profissional exibido sob o nome no cabeçalho, ex.: "Arquiteta e Urbanista" */
+  profession: string;
   tagline: string;
   seoDescription: string;
   email: string;

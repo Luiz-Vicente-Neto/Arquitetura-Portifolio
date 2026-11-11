@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import { POST_TYPE_LABEL } from "@/lib/types";
 import { formatDate, img } from "@/lib/utils";
 import DeletePostButton from "./DeletePostButton";
 
-export default function AdminJournal() {
-  const posts = [...readDb().posts].sort((a, b) => b.date.localeCompare(a.date));
+export default async function AdminJournal() {
+  const posts = await (await db()).listPosts();
   return (
     <div className="pb-16">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

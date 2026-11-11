@@ -4,26 +4,31 @@
   "private": true,
   "packageManager": "npm",
   "dependencies": {
-    "react": "latest",
-    "react-dom": "latest",
-    "vinext": "latest",
-    "react-server-dom-webpack": "latest"
+    "postgres": "^4.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-server-dom-webpack": "^19.3.1",
+    "vinext": "^1.4.4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "tailwindcss": "latest",
-    "typescript": "latest",
-    "vite": "latest",
-    "@vitejs/plugin-react": "latest",
-    "@vitejs/plugin-rsc": "latest"
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "@vitejs/plugin-rsc": "^0.5.39",
+    "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.7"
   },
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "vinext start"
+    "start": "vinext start",
+    "db:setup": "tsx scripts/db-setup.ts",
+    "db:schema": "tsx scripts/db-setup.ts --print > supabase/schema.sql",
+    "typecheck": "tsc --noEmit"
   }
 }

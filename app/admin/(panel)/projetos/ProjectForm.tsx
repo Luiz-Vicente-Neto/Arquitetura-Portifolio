@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { GalleryEditor, ImageField } from "@/components/admin/media";
 import { Card, SaveBar, Select, TextArea, TextInput, Toggle } from "@/components/admin/ui";
 import { useFormState } from "@/components/admin/useSave";
-import { saveProject, type ProjectInput } from "@/lib/actions/admin";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deleteProject, saveProject, type ProjectInput } from "@/lib/actions/admin";
 import { PROJECT_STATUS_LABEL, type Category, type ProjectStatus } from "@/lib/types";
-import { slugify } from "@/lib/utils";
+import { slugify, slugInput } from "@/lib/utils";
 
 export default function ProjectForm({ initial, categories }: { initial: ProjectInput; categories: Category[] }) {
   const router = useRouter();
@@ -27,12 +28,35 @@ export default function ProjectForm({ initial, categories }: { initial: ProjectI
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">{isNew ? "Novo projeto" : p.title || "Projeto"}</h1>
         </div>
-        {!isNew && (
-          <a href={`/projetos/${initial.slug}`} target="_blank" rel="noreferrer" className="text-sm text-[#6b675f] hover:text-ink">
-            Ver no site ↗
-          </a>
+        {!isNew && initial.id && (
+          <div className="flex items-center gap-2">
+            <a
+              href={`/projetos/${initial.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="px-2 text-sm text-[#6b675f] hover:text-ink"
+            >
+              {initial.published ? "Ver no site ↗" : "Pré-visualizar ↗"}
+            </a>
+            <DeleteButton
+              confirmText={`Excluir “${initial.title}”? Essa ação não pode ser desfeita.`}
+              onDelete={() => deleteProject(initial.id!)}
+              redirectTo="/admin/projetos"
+              successText="Projeto excluído"
+            />
+          </div>
         )}
       </div>
+
+      {categories.length === 0 && (
+        <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Nenhuma categoria cadastrada.{" "}
+          <Link href="/admin/categorias" className="font-medium underline">
+            Crie uma categoria
+          </Link>{" "}
+          para classificar os projetos.
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -130,7 +154,7 @@ export default function ProjectForm({ initial, categories }: { initial: ProjectI
               <TextInput
                 label="Endereço (slug)"
                 value={p.slug}
-                onChange={(v) => set("slug", slugify(v))}
+                onChange={(v) => set("slug", slugInput(v))}
                 placeholder={slugify(p.title) || "gerado-automaticamente"}
                 hint={`/projetos/${p.slug || slugify(p.title) || "…"}`}
               />

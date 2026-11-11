@@ -4,8 +4,8 @@ import { getSettings } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Contato" };
 
-export default function ContactPage() {
-  const s = getSettings();
+export default async function ContactPage() {
+  const s = await getSettings();
   const wa = s.whatsapp.replace(/\D/g, "");
 
   return (

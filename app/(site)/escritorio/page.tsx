@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Reveal from "@/components/site/Reveal";
-import { readDb } from "@/lib/db";
+import { getAbout, getSettings } from "@/lib/db";
 import { img, pad, paragraphs } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Escritório" };
 
-export default function AboutPage() {
-  const { about, settings } = readDb();
+export default async function AboutPage() {
+  const [about, settings] = await Promise.all([getAbout(), getSettings()]);
   const clients = about.clients
     .split(",")
     .map((c) => c.trim())
@@ -35,7 +35,8 @@ export default function AboutPage() {
           </div>
           <p className="mt-3 text-sm text-stone">
             {settings.architectName}
-            {settings.cau && ` — Arquiteta e urbanista, ${settings.cau}`}
+            {settings.profession && ` — ${settings.profession}`}
+            {settings.cau && `, ${settings.cau}`}
           </p>
         </Reveal>
         <Reveal className="md:col-span-6 md:col-start-7" delay={100}>

@@ -23,9 +23,25 @@ export function useFormState<T>(initial: T, save: (v: T) => Promise<ActionResult
   const submit = () =>
     start(async () => {
       const current = valueRef.current;
-      const res = await save(current);
+      let res: ActionResult;
+      try {
+        res = await save(current);
+      } catch (err) {
+        // redirect() do Next (ex.: sessão expirada) também chega aqui e precisa seguir adiante.
+        if (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT")) throw err;
+        console.error(err);
+        toast("Erro de conexão ao salvar. Verifique sua internet e tente de novo.", "error");
+        return;
+      }
       if (res.ok) {
-        setSaved(JSON.stringify(current));
+        if (res.data !== undefined) {
+          // O servidor pode normalizar valores (ex.: WhatsApp só com dígitos): exibe o que ficou salvo,
+          // a menos que a pessoa tenha continuado editando durante o salvamento.
+          if (valueRef.current === current) setValue(res.data as T);
+          setSaved(JSON.stringify(res.data));
+        } else {
+          setSaved(JSON.stringify(current));
+        }
         toast("Alterações salvas");
         opts?.onSaved?.(res);
         router.refresh();

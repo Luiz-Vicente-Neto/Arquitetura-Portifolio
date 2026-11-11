@@ -17,8 +17,8 @@ export default function DeletePostButton({ id, title }: { id: string; title: str
       onClick={() => {
         if (!confirm(`Excluir “${title}”?`)) return;
         start(async () => {
-          await deletePost(id);
-          toast("Publicação excluída");
+          const res = await deletePost(id);
+          toast(res.ok ? "Publicação excluída" : (res.error ?? "Erro ao excluir"), res.ok ? "ok" : "error");
           router.refresh();
         });
       }}

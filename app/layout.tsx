@@ -5,7 +5,7 @@ import "./globals.css";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const s = getSettings();
+  const s = await getSettings();
   return {
     title: { default: s.siteName, template: `%s — ${s.siteName}` },
     description: s.seoDescription,
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
         <link
           rel="icon"
-          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23161513'/><path d='M8 24V8h3v6.5h10V8h3v16h-3v-6.5H11V24z' fill='%23f3f1ec'/></svg>"
+          href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23161513'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-size='17' fill='%23f3f1ec'>SR</text></svg>"
         />
       </head>
       {/* suppressHydrationWarning: extensões do navegador costumam injetar atributos no body */}

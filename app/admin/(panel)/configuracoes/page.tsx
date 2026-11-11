@@ -1,6 +1,6 @@
-import { readDb } from "@/lib/db";
+import { getSettings } from "@/lib/db";
 import SettingsForm from "./SettingsForm";
 
-export default function SettingsPage() {
-  return <SettingsForm initial={readDb().settings} />;
+export default async function SettingsPage() {
+  return <SettingsForm initial={await getSettings()} />;
 }

@@ -1,94 +1,113 @@
 import "server-only";
-import fs from "node:fs";
-import path from "node:path";
 import crypto from "node:crypto";
-import type { Database } from "./types";
+import path from "node:path";
+import { JsonStore } from "./data/json-store";
+import { PgStore } from "./data/pg-store";
+import type { Store } from "./data/store";
 import { createSeed } from "./seed";
+import type { AboutContent, AdminUser, HomeContent, Settings } from "./types";
 
 /**
- * Armazenamento simples em arquivo JSON.
- * Todo o conteúdo do CMS vive em storage/content.json e os uploads em storage/uploads.
- * A interface (readDb / updateDb) isola o resto da aplicação do formato de armazenamento,
- * então trocar por SQLite, Postgres ou D1 depois exige mudar apenas este arquivo.
+ * Ponto único de acesso aos dados.
+ *
+ * - Com DATABASE_URL definida → PostgreSQL (ex.: Supabase).
+ * - Sem DATABASE_URL         → arquivo JSON em storage/content.json.
+ *
+ * Na primeira chamada de cada processo as tabelas são criadas (idempotente) e, se o banco
+ * estiver vazio, o conteúdo inicial é inserido.
  */
 
 export const STORAGE_DIR = path.resolve(process.env.STORAGE_DIR ?? path.join(process.cwd(), "storage"));
 export const UPLOADS_DIR = path.join(STORAGE_DIR, "uploads");
-const DB_FILE = path.join(STORAGE_DIR, "content.json");
-
-let cache: { mtimeMs: number; data: Database } | null = null;
 
 export function hashPassword(password: string, salt = crypto.randomBytes(16).toString("hex")) {
   const hash = crypto.scryptSync(password, salt, 64).toString("hex");
   return { hash, salt };
 }
 
-function ensureStorage() {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  if (!fs.existsSync(DB_FILE)) {
-    const secret = process.env.SESSION_SECRET ?? crypto.randomBytes(32).toString("hex");
-    const { hash, salt } = hashPassword("admin123");
-    writeFileAtomic(DB_FILE, JSON.stringify(createSeed(secret, hash, salt), null, 2));
+export const DEFAULT_ADMIN_PASSWORD = "admin123";
+
+function createStore(): Store {
+  const url = process.env.DATABASE_URL?.trim();
+  if (url) return PgStore.connect(url);
+  return new JsonStore(path.join(STORAGE_DIR, "content.json"));
+}
+
+const g = globalThis as unknown as { __arqStore?: Store; __arqReady?: Promise<Store> };
+
+export async function db(): Promise<Store> {
+  const store = await ready();
+  // No modo arquivo, se o content.json for apagado com o servidor rodando, recria o conteúdo inicial.
+  if (store.kind === "json" && (await store.isEmpty())) {
+    g.__arqReady = undefined;
+    return ready();
   }
+  return store;
 }
 
-function writeFileAtomic(file: string, contents: string) {
-  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-  fs.writeFileSync(tmp, contents, "utf8");
-  try {
-    fs.renameSync(tmp, file);
-  } catch {
-    // No Windows o rename pode falhar se outro processo estiver lendo; tenta sobrescrever direto.
-    fs.writeFileSync(file, contents, "utf8");
-    fs.rmSync(tmp, { force: true });
+function ready(): Promise<Store> {
+  if (!g.__arqReady) {
+    g.__arqReady = (async () => {
+      const store = (g.__arqStore ??= createStore());
+      await store.migrate();
+      if (await store.isEmpty()) {
+        const secret = process.env.SESSION_SECRET ?? crypto.randomBytes(32).toString("hex");
+        const { hash, salt } = hashPassword(DEFAULT_ADMIN_PASSWORD);
+        await store.seed(createSeed(secret, hash, salt));
+      }
+      return store;
+    })().catch((err) => {
+      // Permite nova tentativa na próxima requisição (ex.: banco ainda subindo).
+      g.__arqReady = undefined;
+      throw err;
+    });
   }
+  return g.__arqReady;
 }
 
-export function readDb(): Database {
-  ensureStorage();
-  const stat = fs.statSync(DB_FILE);
-  if (cache && cache.mtimeMs === stat.mtimeMs) return cache.data;
-  const data = JSON.parse(fs.readFileSync(DB_FILE, "utf8")) as Database;
-  cache = { mtimeMs: stat.mtimeMs, data };
-  return data;
+async function required<T>(value: Promise<T | null>, what: string): Promise<T> {
+  const v = await value;
+  if (v == null) throw new Error(`Conteúdo "${what}" ausente no banco de dados.`);
+  return v;
 }
 
-/** Aplica uma mutação ao banco e persiste. Retorna o valor devolvido pelo mutator. */
-export function updateDb<T>(mutator: (db: Database) => T): T {
-  const current = readDb();
-  const draft = structuredClone(current);
-  const result = mutator(draft);
-  writeFileAtomic(DB_FILE, JSON.stringify(draft, null, 2));
-  cache = null;
-  return result;
+/* ---------- Conteúdo ---------- */
+
+export async function getSettings(): Promise<Settings> {
+  const s = await required((await db()).getContent("settings"), "settings");
+  return { ...s, profession: s.profession ?? "" };
+}
+export async function getHome(): Promise<HomeContent> {
+  return required((await db()).getContent("home"), "home");
+}
+export async function getAbout(): Promise<AboutContent> {
+  return required((await db()).getContent("about"), "about");
+}
+export async function getUser(): Promise<AdminUser> {
+  return required((await db()).getContent("user"), "user");
+}
+export async function getSecret(): Promise<string> {
+  return process.env.SESSION_SECRET || (await required((await db()).getContent("secret"), "secret"));
 }
 
 /* ---------- Consultas públicas ---------- */
 
-export function getSettings() {
-  return readDb().settings;
+export async function getCategories() {
+  return (await db()).listCategories();
 }
 
-export function getCategories() {
-  return readDb().categories;
+export async function getPublishedProjects() {
+  return (await (await db()).listProjects()).filter((p) => p.published);
 }
 
-export function getPublishedProjects() {
-  return readDb()
-    .projects.filter((p) => p.published)
-    .sort((a, b) => a.order - b.order);
+export async function getProjectBySlug(slug: string) {
+  return (await db()).getProject({ slug });
 }
 
-export function getProjectBySlug(slug: string) {
-  return readDb().projects.find((p) => p.slug === slug);
+export async function getPublishedPosts() {
+  return (await (await db()).listPosts()).filter((p) => p.published);
 }
 
-export function getPublishedPosts() {
-  return readDb()
-    .posts.filter((p) => p.published)
-    .sort((a, b) => b.date.localeCompare(a.date));
-}
-
-export function getPostBySlug(slug: string) {
-  return readDb().posts.find((p) => p.slug === slug);
+export async function getPostBySlug(slug: string) {
+  return (await db()).getPost({ slug });
 }

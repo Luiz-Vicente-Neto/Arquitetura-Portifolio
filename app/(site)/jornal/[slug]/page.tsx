@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import PreviewBanner from "@/components/site/PreviewBanner";
+import { getSession } from "@/lib/auth";
 import { getPostBySlug } from "@/lib/db";
 import { POST_TYPE_LABEL } from "@/lib/types";
 import { formatDate, img, paragraphs } from "@/lib/utils";
@@ -9,17 +11,21 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const p = getPostBySlug(slug);
-  return p ? { title: p.title, description: p.excerpt } : {};
+  const p = await getPostBySlug(slug);
+  if (!p) return {};
+  return p.published ? { title: p.title, description: p.excerpt } : { title: p.title, robots: { index: false } };
 }
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
-  if (!post || !post.published) notFound();
+  const post = await getPostBySlug(slug);
+  if (!post) notFound();
+  const preview = !post.published;
+  if (preview && !(await getSession())) notFound();
 
   return (
     <article className="wrap pt-32 md:pt-44">
+      {preview && <PreviewBanner editHref={`/admin/jornal/${post.id}`} />}
       <div className="mx-auto max-w-3xl">
         <Link href="/jornal" className="text-sm text-stone">
           ← <span className="link-line">Jornal</span>

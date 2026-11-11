@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Badge, Button, PageHeader, useToast } from "@/components/admin/ui";
 import { deleteMessage, setMessageRead } from "@/lib/actions/admin";
 import type { Message } from "@/lib/types";
-import { cx, formatDateTime } from "@/lib/utils";
+import { cx, formatDateTime, formatShortDate } from "@/lib/utils";
 
 export default function Inbox({ messages }: { messages: Message[] }) {
   const [selectedId, setSelectedId] = useState<string | null>(messages[0]?.id ?? null);
@@ -45,7 +45,7 @@ export default function Inbox({ messages }: { messages: Message[] }) {
                   <span className="flex items-center gap-2">
                     {!m.read && <span className="h-2 w-2 shrink-0 rounded-full bg-ink" />}
                     <span className={cx("flex-1 truncate text-sm", !m.read && "font-semibold")}>{m.name}</span>
-                    <span className="shrink-0 text-[11px] text-[#8a867e]">{formatDateTime(m.createdAt).split(" ")[0]}</span>
+                    <span className="shrink-0 text-[11px] text-[#8a867e]">{formatShortDate(m.createdAt)}</span>
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-[#6b675f]">{m.message}</span>
                 </button>

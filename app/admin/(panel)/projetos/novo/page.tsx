@@ -1,9 +1,9 @@
-import { readDb } from "@/lib/db";
+import { getCategories } from "@/lib/db";
 import type { ProjectInput } from "@/lib/actions/admin";
 import ProjectForm from "../ProjectForm";
 
-export default function NewProjectPage() {
-  const { categories } = readDb();
+export default async function NewProjectPage() {
+  const categories = await getCategories();
   const initial: ProjectInput = {
     slug: "",
     title: "",

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import ProjectsTable from "./ProjectsTable";
 
-export default function AdminProjects() {
-  const db = readDb();
-  const projects = [...db.projects].sort((a, b) => a.order - b.order);
+export default async function AdminProjects() {
+  const store = await db();
+  const [projects, categories] = await Promise.all([store.listProjects(), store.listCategories()]);
   return (
     <div className="pb-16">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -18,7 +18,7 @@ export default function AdminProjects() {
           + Novo projeto
         </Link>
       </div>
-      <ProjectsTable projects={projects} categories={db.categories} />
+      <ProjectsTable projects={projects} categories={categories} />
     </div>
   );
 }

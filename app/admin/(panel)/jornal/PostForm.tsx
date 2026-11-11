@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { ImageField } from "@/components/admin/media";
 import { Card, SaveBar, Select, TextArea, TextInput, Toggle } from "@/components/admin/ui";
 import { useFormState } from "@/components/admin/useSave";
-import { savePost, type PostInput } from "@/lib/actions/admin";
+import DeleteButton from "@/components/admin/DeleteButton";
+import { deletePost, savePost, type PostInput } from "@/lib/actions/admin";
 import { POST_TYPE_LABEL, type PostType } from "@/lib/types";
-import { slugify } from "@/lib/utils";
+import { slugify, slugInput } from "@/lib/utils";
 
 export default function PostForm({ initial }: { initial: PostInput }) {
   const router = useRouter();
@@ -20,11 +21,31 @@ export default function PostForm({ initial }: { initial: PostInput }) {
 
   return (
     <div>
-      <div className="mb-6">
-        <Link href="/admin/jornal" className="text-sm text-[#6b675f] hover:text-ink">
-          ← Jornal
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{isNew ? "Nova publicação" : p.title}</h1>
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <Link href="/admin/jornal" className="text-sm text-[#6b675f] hover:text-ink">
+            ← Jornal
+          </Link>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{isNew ? "Nova publicação" : p.title || "Publicação"}</h1>
+        </div>
+        {!isNew && initial.id && (
+          <div className="flex items-center gap-2">
+            <a
+              href={`/jornal/${initial.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="px-2 text-sm text-[#6b675f] hover:text-ink"
+            >
+              {initial.published ? "Ver no site ↗" : "Pré-visualizar ↗"}
+            </a>
+            <DeleteButton
+              confirmText={`Excluir “${initial.title}”? Essa ação não pode ser desfeita.`}
+              onDelete={() => deletePost(initial.id!)}
+              redirectTo="/admin/jornal"
+              successText="Publicação excluída"
+            />
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -65,7 +86,7 @@ export default function PostForm({ initial }: { initial: PostInput }) {
               <TextInput
                 label="Endereço (slug)"
                 value={p.slug}
-                onChange={(v) => set("slug", slugify(v))}
+                onChange={(v) => set("slug", slugInput(v))}
                 placeholder={slugify(p.title) || "gerado-automaticamente"}
               />
             </div>

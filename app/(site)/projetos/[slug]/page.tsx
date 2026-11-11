@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Gallery from "@/components/site/Gallery";
 import Reveal from "@/components/site/Reveal";
+import PreviewBanner from "@/components/site/PreviewBanner";
+import { getSession } from "@/lib/auth";
 import { getCategories, getProjectBySlug, getPublishedProjects } from "@/lib/db";
 import { PROJECT_STATUS_LABEL } from "@/lib/types";
 import { img, paragraphs } from "@/lib/utils";
@@ -11,8 +13,9 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProjectBySlug(slug);
+  const p = await getProjectBySlug(slug);
   if (!p) return {};
+  if (!p.published) return { title: p.title, robots: { index: false } };
   return {
     title: p.title,
     description: p.summary,
@@ -22,13 +25,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
-  if (!project || !project.published) notFound();
+  const project = await getProjectBySlug(slug);
+  if (!project) notFound();
+  // Rascunhos só aparecem para quem está logado no CMS (pré-visualização).
+  const preview = !project.published;
+  if (preview && !(await getSession())) notFound();
 
-  const category = getCategories().find((c) => c.id === project.categoryId);
-  const all = getPublishedProjects();
+  const [categories, all] = await Promise.all([getCategories(), getPublishedProjects()]);
+  const category = categories.find((c) => c.id === project.categoryId);
   const idx = all.findIndex((p) => p.id === project.id);
-  const next = all[(idx + 1) % all.length];
+  const next = all.length ? all[(idx + 1) % all.length] : undefined;
 
   const facts = [
     ["Local", project.location],
@@ -43,6 +49,7 @@ export default async function ProjectPage({ params }: Props) {
 
   return (
     <article>
+      {preview && <PreviewBanner editHref={`/admin/projetos/${project.id}`} />}
       {/* Capa */}
       <section className="relative h-[92svh] min-h-[520px] overflow-hidden bg-ink text-white">
         <img

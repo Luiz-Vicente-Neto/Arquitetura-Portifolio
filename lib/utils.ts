@@ -9,6 +9,28 @@ export function slugify(input: string): string {
     .slice(0, 80);
 }
 
+/**
+ * Normalização para usar enquanto a pessoa digita um slug: igual ao slugify,
+ * mas preserva o hífen final (senão seria impossível digitar "casa-nova").
+ * A versão definitiva é aplicada no servidor ao salvar.
+ */
+export function slugInput(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+/, "")
+    .slice(0, 80);
+}
+
+export function formatShortDate(iso: string): string {
+  const d = new Date(iso.length <= 10 ? `${iso}T12:00:00` : iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 export function uid(prefix = ""): string {
   const rand = Math.random().toString(36).slice(2, 8);
   return `${prefix}${Date.now().toString(36)}${rand}`;

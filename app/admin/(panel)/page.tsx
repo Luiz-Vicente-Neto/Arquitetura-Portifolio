@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { readDb } from "@/lib/db";
+import { db as getStore, getUser } from "@/lib/db";
 import { formatDateTime, img } from "@/lib/utils";
 
-export default function Dashboard() {
-  const db = readDb();
+export default async function Dashboard() {
+  const store = await getStore();
+  const [projects, posts, messages, user] = await Promise.all([
+    store.listProjects(),
+    store.listPosts(),
+    store.listMessages(),
+    getUser(),
+  ]);
+  const db = { projects, posts, messages, user };
   const unread = db.messages.filter((m) => !m.read);
   const recent = [...db.projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5);
 

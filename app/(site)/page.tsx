@@ -2,19 +2,22 @@ import Link from "next/link";
 import HeroSlider from "@/components/site/HeroSlider";
 import ProjectCard from "@/components/site/ProjectCard";
 import Reveal from "@/components/site/Reveal";
-import { getCategories, getPublishedPosts, getPublishedProjects, readDb } from "@/lib/db";
+import { getCategories, getHome, getPublishedPosts, getPublishedProjects } from "@/lib/db";
 import { POST_TYPE_LABEL } from "@/lib/types";
 import { formatDate, img, pad } from "@/lib/utils";
 
-export default function HomePage() {
-  const { home } = readDb();
-  const projects = getPublishedProjects();
-  const categories = getCategories();
+export default async function HomePage() {
+  const [home, projects, categories, allPosts] = await Promise.all([
+    getHome(),
+    getPublishedProjects(),
+    getCategories(),
+    getPublishedPosts(),
+  ]);
   const catName = Object.fromEntries(categories.map((c) => [c.id, c.name]));
   const featured = projects.filter((p) => p.featured);
   const heroSlides = (featured.length ? featured : projects).slice(0, 5);
   const selection = (featured.length >= 3 ? featured : projects).slice(0, 5);
-  const posts = getPublishedPosts().slice(0, 3);
+  const posts = allPosts.slice(0, 3);
 
   return (
     <>

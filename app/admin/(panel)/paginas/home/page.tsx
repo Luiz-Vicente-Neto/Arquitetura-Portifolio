@@ -1,6 +1,6 @@
-import { readDb } from "@/lib/db";
+import { getHome } from "@/lib/db";
 import HomeForm from "./HomeForm";
 
-export default function HomeContentPage() {
-  return <HomeForm initial={readDb().home} />;
+export default async function HomeContentPage() {
+  return <HomeForm initial={await getHome()} />;
 }

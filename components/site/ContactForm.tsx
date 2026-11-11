@@ -11,21 +11,23 @@ function Field({
   type = "text",
   required,
   textarea,
+  defaultValue,
 }: {
   label: string;
   name: string;
   type?: string;
   required?: boolean;
   textarea?: boolean;
+  defaultValue?: string;
 }) {
   const cls =
     "peer w-full border-0 border-b border-line bg-transparent px-0 pt-6 pb-2 text-base outline-none transition-colors placeholder-transparent focus:border-ink";
   return (
     <label className="relative block">
       {textarea ? (
-        <textarea name={name} required={required} rows={5} placeholder={label} className={`${cls} resize-none`} />
+        <textarea name={name} defaultValue={defaultValue} required={required} rows={5} placeholder={label} className={`${cls} resize-none`} />
       ) : (
-        <input name={name} type={type} required={required} placeholder={label} className={cls} />
+        <input name={name} defaultValue={defaultValue} type={type} required={required} placeholder={label} className={cls} />
       )}
       <span className="pointer-events-none absolute top-0 left-0 text-[11px] tracking-[0.14em] text-stone uppercase">
         {label}
@@ -36,7 +38,13 @@ function Field({
 }
 
 export default function ContactForm() {
-  const [state, action, pending] = useActionState<ContactState, FormData>(sendContactMessage, { ok: false });
+  // `attempt` muda a cada envio e serve de `key` do formulário: ele remonta já com os valores
+  // devolvidos pela action (o reset automático do React 19 apagaria o que a pessoa digitou).
+  const [state, action, pending] = useActionState<ContactState & { attempt: number }, FormData>(
+    async (prev, formData) => ({ ...(await sendContactMessage(prev, formData)), attempt: prev.attempt + 1 }),
+    { ok: false, attempt: 0 },
+  );
+  const v = state.values;
 
   if (state.ok) {
     return (
@@ -50,18 +58,18 @@ export default function ContactForm() {
   }
 
   return (
-    <form action={action} className="grid gap-8">
+    <form key={state.attempt} action={action} className="grid gap-8">
       <div className="grid gap-8 md:grid-cols-2">
-        <Field label="Nome" name="name" required />
-        <Field label="E-mail" name="email" type="email" required />
+        <Field label="Nome" name="name" required defaultValue={v?.name} />
+        <Field label="E-mail" name="email" type="email" required defaultValue={v?.email} />
       </div>
       <div className="grid gap-8 md:grid-cols-2">
-        <Field label="Telefone" name="phone" type="tel" />
+        <Field label="Telefone" name="phone" type="tel" defaultValue={v?.phone} />
         <label className="block">
           <span className="text-[11px] tracking-[0.14em] text-stone uppercase">Tipo de projeto</span>
           <select
             name="projectType"
-            defaultValue=""
+            defaultValue={v?.projectType ?? ""}
             className="mt-2 w-full border-0 border-b border-line bg-transparent pb-2 text-base outline-none focus:border-ink"
           >
             <option value="" disabled>
@@ -73,12 +81,16 @@ export default function ContactForm() {
           </select>
         </label>
       </div>
-      <Field label="Conte sobre o projeto" name="message" required textarea />
+      <Field label="Conte sobre o projeto" name="message" required textarea defaultValue={v?.message} />
 
       {/* honeypot */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
 
-      {state.error && <p className="text-sm text-red-700">{state.error}</p>}
+      {state.error && (
+        <p role="alert" className="text-sm text-red-700">
+          {state.error}
+        </p>
+      )}
 
       <div>
         <button

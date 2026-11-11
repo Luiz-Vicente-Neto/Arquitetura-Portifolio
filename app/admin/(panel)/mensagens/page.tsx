@@ -1,7 +1,6 @@
-import { readDb } from "@/lib/db";
+import { db } from "@/lib/db";
 import Inbox from "./Inbox";
 
-export default function MessagesPage() {
-  const messages = [...readDb().messages].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  return <Inbox messages={messages} />;
+export default async function MessagesPage() {
+  return <Inbox messages={await (await db()).listMessages()} />;
 }

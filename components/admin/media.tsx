@@ -178,7 +178,7 @@ export function ImageField({
           </button>
         )}
         {value && (
-          <div className="absolute inset-x-0 bottom-0 flex justify-end gap-2 bg-gradient-to-t from-black/50 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute inset-x-0 bottom-0 flex justify-end gap-2 bg-gradient-to-t from-black/50 to-transparent p-2 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
             <Button variant="secondary" className="!py-1 text-xs" onClick={() => setOpen(true)}>
               Trocar
             </Button>

@@ -4,6 +4,7 @@ import path from "node:path";
 import { JsonStore } from "./data/json-store";
 import { PgStore } from "./data/pg-store";
 import type { Store } from "./data/store";
+import { normalizeAbout, normalizeHome, normalizeSettings } from "./normalize";
 import { createSeed } from "./seed";
 import type { AboutContent, AdminUser, HomeContent, Settings } from "./types";
 
@@ -71,17 +72,18 @@ async function required<T>(value: Promise<T | null>, what: string): Promise<T> {
   return v;
 }
 
+type Loose = Record<string, unknown>;
+
 /* ---------- Conteúdo ---------- */
 
 export async function getSettings(): Promise<Settings> {
-  const s = await required((await db()).getContent("settings"), "settings");
-  return { ...s, profession: s.profession ?? "" };
+  return normalizeSettings((await required((await db()).getContent("settings"), "settings")) as unknown as Loose);
 }
 export async function getHome(): Promise<HomeContent> {
-  return required((await db()).getContent("home"), "home");
+  return normalizeHome((await required((await db()).getContent("home"), "home")) as unknown as Loose);
 }
 export async function getAbout(): Promise<AboutContent> {
-  return required((await db()).getContent("about"), "about");
+  return normalizeAbout((await required((await db()).getContent("about"), "about")) as unknown as Loose);
 }
 export async function getUser(): Promise<AdminUser> {
   return required((await db()).getContent("user"), "user");
@@ -102,12 +104,4 @@ export async function getPublishedProjects() {
 
 export async function getProjectBySlug(slug: string) {
   return (await db()).getProject({ slug });
-}
-
-export async function getPublishedPosts() {
-  return (await (await db()).listPosts()).filter((p) => p.published);
-}
-
-export async function getPostBySlug(slug: string) {
-  return (await db()).getPost({ slug });
 }

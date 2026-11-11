@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { normalizeProject } from "../normalize";
 import type { Database, Post, Project } from "../types";
 import type { ContentKey, ContentMap, Store } from "./store";
 
@@ -30,8 +31,11 @@ export class JsonStore implements Store {
     const stat = fs.statSync(this.file);
     if (this.cache && this.cache.mtimeMs === stat.mtimeMs) return this.cache.data;
     const data = JSON.parse(fs.readFileSync(this.file, "utf8")) as Database;
-    // Campos adicionados depois da criação do arquivo recebem valores padrão.
-    data.settings.profession ??= "";
+    // Arquivos gravados por versões anteriores recebem os campos atuais.
+    data.projects = (data.projects ?? []).map((p) => normalizeProject(p as unknown as Record<string, unknown>));
+    data.posts ??= [];
+    data.messages ??= [];
+    data.media ??= [];
     for (const m of data.media) m.storagePath ??= path.basename(m.url);
     this.cache = { mtimeMs: stat.mtimeMs, data };
     return data;
@@ -127,7 +131,7 @@ export class JsonStore implements Store {
     });
   }
 
-  /* ---------- jornal ---------- */
+  /* ---------- jornal (fora do site; mantido para bancos já criados) ---------- */
 
   async listPosts() {
     return [...this.read().posts].sort((a, b) => b.date.localeCompare(a.date));

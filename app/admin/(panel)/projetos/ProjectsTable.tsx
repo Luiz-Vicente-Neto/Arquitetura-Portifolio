@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Badge, Button, useToast } from "@/components/admin/ui";
+import { Button, useToast } from "@/components/admin/ui";
 import { deleteProject, moveProject, toggleProjectFlag, type ActionResult } from "@/lib/actions/admin";
-import { PROJECT_STATUS_LABEL, type Category, type Project } from "@/lib/types";
+import type { Category, Project } from "@/lib/types";
 import { img } from "@/lib/utils";
 
 export default function ProjectsTable({ projects, categories }: { projects: Project[]; categories: Category[] }) {
@@ -24,7 +24,7 @@ export default function ProjectsTable({ projects, categories }: { projects: Proj
     });
 
   const filtered = projects.filter((p) =>
-    `${p.title} ${p.location} ${p.year}`.toLowerCase().includes(q.toLowerCase()),
+    `${p.title} ${p.program} ${p.location} ${p.year}`.toLowerCase().includes(q.toLowerCase()),
   );
 
   return (
@@ -33,6 +33,7 @@ export default function ProjectsTable({ projects, categories }: { projects: Proj
         <input
           className="admin-input md:!w-72"
           placeholder="Buscar projeto…"
+          aria-label="Buscar projeto"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -63,32 +64,30 @@ export default function ProjectsTable({ projects, categories }: { projects: Proj
                 </Button>
               </div>
               <Link href={`/admin/projetos/${p.id}`} className="flex min-w-0 flex-1 items-center gap-4">
-                <span className="h-12 w-16 shrink-0 overflow-hidden rounded bg-[#f0eee9]">
+                <span className="hatch h-12 w-16 shrink-0 overflow-hidden rounded">
                   {p.cover && <img src={img(p.cover, 200)} alt="" className="h-full w-full object-cover" />}
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{p.title}</span>
                   <span className="block truncate text-xs text-[#8a867e]">
-                    {catName[p.categoryId] ?? "Sem categoria"} · {p.location} · {p.year}
+                    {[catName[p.categoryId] ?? "Sem categoria", p.program, p.year].filter(Boolean).join(" · ")}
                   </span>
                 </span>
               </Link>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge tone={p.status === "concluido" ? "neutral" : p.status === "em-andamento" ? "blue" : "amber"}>
-                  {PROJECT_STATUS_LABEL[p.status]}
-                </Badge>
                 <button
                   type="button"
                   onClick={() => run(() => toggleProjectFlag(p.id, "featured"))}
-                  className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${p.featured ? "bg-ink text-white" : "bg-[#efede9] text-[#8a867e]"}`}
-                  title="Alternar destaque"
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${p.featured ? "bg-ink text-white" : "bg-[#efede9] text-[#6b675f]"}`}
+                  title="Alternar capa da página inicial"
+                  aria-pressed={p.featured}
                 >
-                  ★ Destaque
+                  ★ Capa
                 </button>
                 <button
                   type="button"
                   onClick={() => run(() => toggleProjectFlag(p.id, "published"), p.published ? "Projeto despublicado" : "Projeto publicado")}
-                  className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${p.published ? "bg-emerald-50 text-emerald-700" : "bg-[#efede9] text-[#8a867e]"}`}
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${p.published ? "bg-emerald-50 text-emerald-700" : "bg-[#efede9] text-[#6b675f]"}`}
                   title="Alternar publicação"
                 >
                   {p.published ? "Publicado" : "Rascunho"}

@@ -85,6 +85,20 @@ create table if not exists media (
 );
 create index if not exists media_created_idx on media (created_at desc);
 
+-- Campos do portfólio (ficha acadêmica e blocos do estudo de caso). Idempotente: bancos
+-- criados antes desta versão ganham as colunas; as antigas (client, team, photographer, status)
+-- permanecem, sem uso.
+alter table projects add column if not exists program text not null default '';
+alter table projects add column if not exists study_context text not null default '';
+alter table projects add column if not exists advisor text not null default '';
+alter table projects add column if not exists authorship text not null default '';
+alter table projects add column if not exists tools text not null default '';
+alter table projects add column if not exists site_text text not null default '';
+alter table projects add column if not exists construction_text text not null default '';
+alter table projects add column if not exists process_text text not null default '';
+alter table projects add column if not exists credits text not null default '';
+alter table projects add column if not exists pdf_url text not null default '';
+
 -- No Supabase, tabelas do schema public ficam expostas pela API REST (chave anon).
 -- Com RLS ligado e nenhuma policy, só a conexão direta do servidor consegue ler/escrever.
 alter table site_content enable row level security;

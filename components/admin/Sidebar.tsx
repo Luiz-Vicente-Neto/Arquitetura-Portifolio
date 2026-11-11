@@ -13,7 +13,6 @@ const GROUPS = [
       { href: "/admin", label: "Painel", icon: "◫" },
       { href: "/admin/projetos", label: "Projetos", icon: "▦" },
       { href: "/admin/categorias", label: "Categorias", icon: "◇" },
-      { href: "/admin/jornal", label: "Jornal", icon: "≡" },
       { href: "/admin/midia", label: "Mídia", icon: "▢" },
     ],
   },
@@ -21,7 +20,7 @@ const GROUPS = [
     label: "Páginas",
     items: [
       { href: "/admin/paginas/home", label: "Página inicial", icon: "⌂" },
-      { href: "/admin/paginas/escritorio", label: "Escritório", icon: "◎" },
+      { href: "/admin/paginas/sobre", label: "Sobre e currículo", icon: "◎" },
     ],
   },
   {

@@ -1,8 +1,7 @@
 "use client";
 
-import { ImageField } from "@/components/admin/media";
-import Repeater from "@/components/admin/Repeater";
-import { Card, PageHeader, SaveBar, TextArea, TextInput, Toggle } from "@/components/admin/ui";
+import Link from "next/link";
+import { Card, PageHeader, SaveBar, TextArea, TextInput } from "@/components/admin/ui";
 import { useFormState } from "@/components/admin/useSave";
 import { saveHome } from "@/lib/actions/admin";
 import type { HomeContent } from "@/lib/types";
@@ -14,7 +13,7 @@ export default function HomeForm({ initial }: { initial: HomeContent }) {
     <div>
       <PageHeader
         title="Página inicial"
-        description="As imagens do carrossel vêm dos projetos marcados como destaque."
+        description="Apresentação, quadro de resumo, projeto de capa e lista de projetos."
         actions={
           <a href="/" target="_blank" rel="noreferrer" className="text-sm text-[#6b675f] hover:text-ink">
             Ver página ↗
@@ -22,56 +21,54 @@ export default function HomeForm({ initial }: { initial: HomeContent }) {
         }
       />
       <div className="space-y-6">
-        <Card title="Capa (hero)">
+        <Card title="Apresentação">
           <div className="grid gap-4">
-            <TextInput label="Título" value={h.heroTitle} onChange={(v) => set("heroTitle", v)} />
-            <TextInput label="Subtítulo" value={h.heroSubtitle} onChange={(v) => set("heroSubtitle", v)} />
-          </div>
-        </Card>
-
-        <Card title="Manifesto" description="Frase de apresentação exibida em fonte grande logo após a capa.">
-          <TextArea label="Texto" rows={4} value={h.statement} onChange={(v) => set("statement", v)} />
-        </Card>
-
-        <Card title="Atuação / serviços">
-          <TextInput
-            label="Título da seção"
-            value={h.servicesTitle}
-            onChange={(v) => set("servicesTitle", v)}
-            className="mb-4"
-          />
-          <Repeater
-            value={h.services}
-            onChange={(v) => set("services", v)}
-            columns={[
-              { key: "title", label: "Serviço", width: "30%" },
-              { key: "text", label: "Descrição", multiline: true },
-            ]}
-            empty={{ title: "", text: "" }}
-            addLabel="+ Adicionar serviço"
-          />
-        </Card>
-
-        <Card title="Sobre (chamada)">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-4">
-              <TextInput label="Título" value={h.aboutTeaserTitle} onChange={(v) => set("aboutTeaserTitle", v)} />
-              <TextArea label="Texto" rows={5} value={h.aboutTeaserText} onChange={(v) => set("aboutTeaserText", v)} />
-            </div>
-            <ImageField label="Imagem" value={h.aboutTeaserImage} onChange={(v) => set("aboutTeaserImage", v)} />
-          </div>
-        </Card>
-
-        <Card title="Jornal e chamada final">
-          <div className="grid gap-4">
-            <Toggle
-              label="Mostrar últimas publicações do jornal"
-              checked={h.showJournal}
-              onChange={(v) => set("showJournal", v)}
+            <TextInput
+              label="Linha de abertura"
+              value={h.eyebrow}
+              onChange={(v) => set("eyebrow", v)}
+              placeholder="Portfólio 2026 · Cidade, UF"
+              hint="Texto pequeno acima do título. Opcional."
             />
-            <TextInput label="Título da chamada" value={h.ctaTitle} onChange={(v) => set("ctaTitle", v)} />
-            <TextArea label="Texto da chamada" rows={2} value={h.ctaText} onChange={(v) => set("ctaText", v)} />
+            <TextArea
+              label="Título"
+              rows={3}
+              value={h.heroTitle}
+              onChange={(v) => set("heroTitle", v)}
+              hint="Uma ou duas frases: quem você é e o que este portfólio reúne."
+            />
           </div>
+        </Card>
+
+        <Card title="Chamada do rodapé" description="Aparece no fim de todas as páginas, com o botão “Entrar em contato”.">
+          <TextInput label="Texto" value={h.ctaTitle} onChange={(v) => set("ctaTitle", v)} hint="Deixe em branco para ocultar." />
+        </Card>
+
+        <Card title="O restante da página vem de outros lugares">
+          <ul className="space-y-2 text-sm text-[#4a4740]">
+            <li>
+              <strong className="font-medium">Quadro de resumo</strong> (formação, disponibilidade, contato, downloads):{" "}
+              <Link href="/admin/configuracoes" className="underline">
+                Configurações
+              </Link>
+              .
+            </li>
+            <li>
+              <strong className="font-medium">Projeto de capa e lista:</strong> o primeiro projeto marcado como “Capa” abre a
+              página; os demais aparecem na ordem definida em{" "}
+              <Link href="/admin/projetos" className="underline">
+                Projetos
+              </Link>
+              .
+            </li>
+            <li>
+              <strong className="font-medium">Bloco “Sobre”:</strong> usa o retrato e o primeiro parágrafo de{" "}
+              <Link href="/admin/paginas/sobre" className="underline">
+                Sobre e currículo
+              </Link>
+              .
+            </li>
+          </ul>
         </Card>
       </div>
       <SaveBar onSave={submit} pending={pending} dirty={dirty} />
